@@ -11,6 +11,7 @@ parser.add_argument('--vcf-file',help="Varicant Call File in VCF format")
 parser.add_argument('-r','--reference',required=True,required=True
 parser.add_argument('--out-dir',help="Output folder")
 parser.add_argument('-v','--verbose',help="Print extra details to stdout.")
+parser.add_argument('--no-run',action="store_true",help="Don't run the jobs, just generate sjm file.")
 
 args = parser.parse_args()
 
