@@ -3,7 +3,7 @@
 {
 	"programs": {
 			"CollectAlignmentSummaryMetrics": {
-					"status":0,
+					"status":1,
 					"env":"picard-tools/1.92",
 					"inputFormat":"bam",
 					"inputArg":"INPUT",
@@ -15,7 +15,7 @@
 							}
 					}
 			"VariantEval": {
-					"status":0,
+					"status":1,
 					"env":"gatk/3.0",
 					"inputFormat":"bam",
 					"inputArg":"--eval",
