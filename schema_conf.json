@@ -1,0 +1,56 @@
+{
+	"$schema": "http://json-schema.org/draft-04/schema#",
+	"type": "object",
+	"additionalProperties": false,
+	"properties": {
+	
+		"programs": {
+			"type": "object",
+			"additionalProperties": false,
+			"properties": {
+
+				"status": {
+					"type": "integer",
+					"enum": [0,1]
+				},
+			
+				"env": {
+					"type": ["string"]
+				},
+				
+				"java": {
+					"type": "string"
+				},
+	
+				"javavm": {
+					"type": "string"
+				},
+		
+				"resources": {
+					"type": "object",
+					"additionalProperties": false,
+					"properties": {
+						"slots": {
+							"type": "integer"
+						},
+						"mem": {
+							"type": "number"
+						},
+						"time": {
+							"type": "string"
+						}
+					}
+				},
+
+				"params" {
+					"type": "object"
+				}
+						
+						 
+						
+			},
+			"required": ["status"]
+		}
+	},
+	"required": ["programs"]
+}
