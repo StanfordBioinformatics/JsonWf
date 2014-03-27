@@ -1,17 +1,40 @@
 
-class Sjm:
+class Job:
+	"""
+	By default, a job will get 1 slot and 10G mem, and a time limit of 7 days.
+	"""
 	tab = "\t"	
-	def __init__(self,outfile):
-		self.out = outfile
+	slots = 1
+	mem = "10G"
+	time = "7d"
+	queue = "seq_pipeline" #by default, soft and hard time=7d, no limit on mem
+
+	@staticmethod
+	def setDefaultSlots(num):
+		slots = num
+
+	@staticmethod
+	def setDefaultMem(num):
+		mem = num
+
+	def __init__(self):
+		self.outfile = False
 		self.logfile = False
 		self.host = False
 		self.queue = False
 		self.wdir = False
 		self.modules = False
-		self.mem = False
 		self.time = False
-		self.slots = False
 		self.project = False
+
+	def setResource(resource,val):
+		if resource == "slots":
+			self.slots = val
+		elif resource == "mem":
+			self.mem = val
+		elif resource == "time":
+			self.time = val 
+
 
 	def setHost(self,host):
 		self.host = host
@@ -19,10 +42,16 @@ class Sjm:
 	def setLogfile(self,logfile):
 		self.logfile = logfile
 
-	def setWDir(self,wdir):
+	def setSjmFile(self,sjmfile):
+		self.sjmfile = sjmfile
+
+	def setCwd(self,wdir):
 		self.wdir = wdir
 	
 	def setName(self,name):
+		"""
+		Name of the job.
+		"""
 		self.name = name
 	
 	def setCmd(self,cmd):
@@ -58,6 +87,9 @@ class Sjm:
 	def getLogfile(self):
 		return self.logfile
 
+	def getSjmFile(self):
+		return self.sjmfile
+
 	def getWorkDir(self):
 		return self.dir
 
@@ -89,7 +121,10 @@ class Sjm:
 		return self.order
 
 	def write(self):
-		fout = open(self.out,'a')
+		"""
+		Opens the SJM file in append mode.
+		"""
+		fout = open(self.getSjmFile(),'a')
 		logfile = self.getLogfile()
 		if logfile:
 			fout.write("log_dir " + logfile + "\n")
@@ -100,24 +135,20 @@ class Sjm:
 		for mod in modules:
 			fout.write(self.tab + "module " +  mod + "\n")
 		mem = self.getMem()
-		if mem:
-			fout.write(self.tab + "memory " + mem + "\n")
-		queue = self.getQueue()
+		fout.write(self.tab + "memory " + mem + "\n")
 		slots = self.getSlots()
-		if slots:
-			fout.write(tab + "slots " + slots + "\n")
+		fout.write(tab + "slots " + slots + "\n")
 		time = self.getTime()
-		if time:
-			fout.write(tab + "time " + time + "\n")
-		if queue:
-			fout.write(self.tab + "queue " +  queue + "\n")
+		fout.write(tab + "time " + time + "\n")
+		queue = self.getQueue()
+		fout.write(self.tab + "queue " +  queue + "\n")
 		host = self.getHost()
 		if host:
 			fout.write(tab + "host " + host + "\n")
 		project = self.getProject()
 		if project:
 			fout.write(tab + "project " + project + "\n")
-		wdir = self.getWDir()
+		wdir = self.getCwd()
 		if wdir:
 			fout.write(tab + "directory" + wdir + "\n") 
 		fout.write("job_end\n")

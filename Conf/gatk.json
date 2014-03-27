@@ -1,0 +1,32 @@
+
+
+{ 
+
+	"resources": {
+		"reference": "/path/to/hg19",
+		"dbsnp": "/path/to/dbsnp"
+	},
+	"programs": {
+
+		"DepthOfCoverage": {
+			"enable":1,
+			"modules":["gatk/3.0"],
+			"jar":"$GATK/GenomeAnalysisTK.jar",
+			"inputFormat":"bam",
+			"inputArg":"INPUT",
+			"outputArg":"OUTPUT",
+			"javavm": "-Xmx2G",
+			"qsub": {
+				"slots":10,
+				"mem":"3G",
+				"time":"7d"
+			},
+			"params": {
+				"-T": "DepthOfCoverage",
+				"-R": "$references",
+				"-I": "$bam",
+				"-o": "output.txt"
+			}
+		}
+	}
+}

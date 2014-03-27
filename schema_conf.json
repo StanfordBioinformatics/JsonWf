@@ -1,56 +1,63 @@
 {
 	"$schema": "http://json-schema.org/draft-04/schema#",
-	"type": "object",
-	"additionalProperties": false,
-	"properties": {
-	
-		"programs": {
-			"type": "object",
+
+	"resources" {
+		"type": "object",
+	 	"properties": { 
+
+				"reference": { "type": "string" },
+
+				"dbsnp": { "type": "string"}
+		}
+	},
+	"programs" {
+		"type": "array",
+		"items" {
+			"type": "object"
 			"additionalProperties": false,
 			"properties": {
 
-				"status": {
-					"type": "integer",
-					"enum": [0,1]
-				},
+				"required": ["id","status"],
+				"properties": {
 			
-				"env": {
-					"type": ["string"]
-				},
-				
-				"java": {
-					"type": "string"
-				},
-	
-				"javavm": {
-					"type": "string"
-				},
-		
-				"resources": {
-					"type": "object",
-					"additionalProperties": false,
-					"properties": {
-						"slots": {
-							"type": "integer"
-						},
-						"mem": {
-							"type": "number"
-						},
-						"time": {
-							"type": "string"
-						}
-					}
-				},
+					"id": { "type": "integer" },
 
-				"params" {
-					"type": "object"
+					"enable": {
+						"type": "integer",
+						"enum": [0,1]
+					},
+			
+					"modules": { "type": ["string"] },
+				
+					"jar": { "type": "string" },
+	
+					"javavm": { "type": "string" },
+		
+					"qsub": {
+						"type": "object",
+						"properties": {
+
+							"slots": { "type": "integer" },
+
+							"mem": { "type": "number" },
+
+							"time": { "type": "string" },
+						
+							"cwd": { "type": "string" },
+
+							"queue": { "type": "string" },
+				
+							"project": { "type": "string"},
+
+							"host":  { "type": "string" }
+						}
+					},
+	
+					"params": {
+						"type": "object"
+					}
 				}
-						
-						 
-						
-			},
-			"required": ["status"]
+			}
 		}
-	},
-	"required": ["programs"]
+	}
 }
