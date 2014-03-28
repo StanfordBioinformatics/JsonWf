@@ -153,9 +153,9 @@ class Job:
 		logfile = self.getLogfile()
 		if logfile:
 			fout.write("log_dir " + logfile + "\n")
-		fout.write("job begin\n")
-		fout.write(self.tab + self.getName() + "\n")
-		fout.write(self.tab + self.getCmd() + "\n")
+		fout.write("job_begin\n")
+		fout.write(self.tab + "name " + self.getName() + "\n")
+		fout.write(self.tab + "cmd " + self.getCmd() + "\n")
 		modules = self.getModules()
 		for mod in modules:
 			fout.write(self.tab + "module " +  mod + "\n")

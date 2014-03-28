@@ -18,8 +18,17 @@ def expandVars(prog):
         j = j.lstrip("$")
         if j.endswith(":r"):
           j = j.rstrip(":r")
-          prog[i] = resources[j]
-          print("Updating {j} to {res}".format(j=j,res=resources[j]))
+          cmdArg = False
+          try: 
+            cmdArg = args.__getattribute(j)
+          except AttributeError:
+            pass
+          if cmdArg:
+            prog[i] = cmdArg
+            print("Updating {j} to {cmdArg}".format(j=j,cmdArg=cmdArg))
+          else:
+            prog[i] = resources[j]
+            print("Updating {j} to {res}".format(j=j,res=resources[j]))
         
     elif type(j) == dict:
       expandVars(j)		
@@ -41,7 +50,7 @@ def makeCmd(progName,prog):
 		pass
 
 	if jar:
-		cmd += "java " + javavm + "-jar " + jar + " "
+		cmd += "java " + javavm + " " + "-jar " + jar + " "
 	else:
 		cmd += progName + " "
 
@@ -197,3 +206,5 @@ if run:
 #conf = json.load(cfh)
 #sfh = open("test_schema.json",'r')
 #schema = json.load(sfh)
+
+#python clinicalQc.py -s schema.json -c Conf/gatk.json -r conf.json -o TEST/sjm.txt --no-append  

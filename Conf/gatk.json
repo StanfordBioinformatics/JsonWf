@@ -24,7 +24,7 @@
 				"mem": "3G",
 				"-M": "$email:r",
 				"-m": "ba",
-				"-A": "clinical-services"
+				"-A": "test"
 			},
 			"params": {
 				"-T": "DepthOfCoverage",
