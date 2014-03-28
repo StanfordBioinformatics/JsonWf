@@ -6,8 +6,8 @@ class Job:
 	tab = "\t"	
 	slots = 1
 	mem = "10G"
-	time = "7d"
 	queue = "seq_pipeline" #by default, soft and hard time=7d, no limit on mem
+	pe = "shm"
 
 	@staticmethod
 	def setDefaultSlots(num):
@@ -17,15 +17,23 @@ class Job:
 	def setDefaultMem(num):
 		mem = num
 
-	def __init__(self):
+	def __init__(self,name):
+		self.setName(name)
 		self.outfile = False
 		self.logfile = False
 		self.host = False
-		self.queue = False
 		self.wdir = False
 		self.modules = False
-		self.time = False
 		self.project = False
+
+
+	def setOtherOpts(opts):
+		self.otherOpts = opts
+
+	def addOtherOpt(opt):
+		others = self.getOtherOpts()
+		others += " " + opt
+		self.setOtherOpts(others)
 
 	def setResource(resource,val):
 		if resource == "slots":
@@ -34,7 +42,7 @@ class Job:
 			self.mem = val
 		elif resource == "time":
 			self.time = val 
-
+	
 
 	def setHost(self,host):
 		self.host = host
@@ -45,12 +53,12 @@ class Job:
 	def setSjmFile(self,sjmfile):
 		self.sjmfile = sjmfile
 
-	def setCwd(self,wdir):
-		self.wdir = wdir
+	def setCwd(self,cwd):
+		self.cwd = cwd
 	
 	def setName(self,name):
 		"""
-		Name of the job.
+		Set job name
 		"""
 		self.name = name
 	
@@ -68,6 +76,12 @@ class Job:
 
 	def setMem(self,mem):
 		self.mem = mem
+	
+	def setPe(self,pe):
+		"""
+		Parallel Environment
+		"""
+		self.pe = pe
 
 	def setSlots(self,slots):
 		self.slots = slots
@@ -81,6 +95,9 @@ class Job:
 	def setOrder(self,order):
 		self.order = order
 
+	def getOtherOpts(self0:
+		return self.otherOpts
+
 	def getHost(self):
 		return self.host
 
@@ -90,8 +107,8 @@ class Job:
 	def getSjmFile(self):
 		return self.sjmfile
 
-	def getWorkDir(self):
-		return self.dir
+	def getCwd(self):
+		return self.cwd
 
 	def getName(self):
 		return self.name
@@ -108,8 +125,12 @@ class Job:
 	def getMem(self):
 		return self.mem
 
+
+	def getPe(self):
+		return self.pe
+
 	def getSlots(self):
-		return self.getSlots()
+		return self.slots
 
 	def getTime(self):
 		return self.time
@@ -137,21 +158,29 @@ class Job:
 		mem = self.getMem()
 		fout.write(self.tab + "memory " + mem + "\n")
 		slots = self.getSlots()
-		fout.write(tab + "slots " + slots + "\n")
+		fout.write(self.tab + "slots " + str(slots) + "\n")
 		time = self.getTime()
-		fout.write(tab + "time " + time + "\n")
+		fout.write(self.tab + "time " + time + "\n")
 		queue = self.getQueue()
 		fout.write(self.tab + "queue " +  queue + "\n")
 		host = self.getHost()
 		if host:
-			fout.write(tab + "host " + host + "\n")
+			fout.write(self.tab + "host " + host + "\n")
 		project = self.getProject()
 		if project:
-			fout.write(tab + "project " + project + "\n")
-		wdir = self.getCwd()
-		if wdir:
-			fout.write(tab + "directory" + wdir + "\n") 
+			fout.write(self.tab + "project " + project + "\n")
+
+		try:
+			cwd = self.getCwd()
+			fout.write(self.tab + "directory " + cwd + "\n") 
+		except AttributeError:
+			pass
+
+		otherOpts = self.getOtherOpts()
+		if otherOpts:
+			fout.write(self.tab + "sched_options " + otherOpts + "\n")
+
 		fout.write("job_end\n")
-		for dependency in self.getOrders():
-			fout.write("order {jobname} after {dependency}\n".format(jobname=self.getName(),dependency=dependency))
+#		for dependency in self.getOrders():
+#			fout.write("order {jobname} after {dependency}\n".format(jobname=self.getName(),dependency=dependency))
 		fout.close()

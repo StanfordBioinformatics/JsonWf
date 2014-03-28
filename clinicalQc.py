@@ -3,19 +3,12 @@
 import json
 import sjm_writer
 from argparse import ArgumentParser
-from jsonschema import validate
+import jsonschema
 import subprocess
 
 
-def makeCmd(name,prog):	
+def makeCmd(progName,prog,sjmfile):	
 	cmd = ""
-
-	modules = False
-	try:
-		modules = prog['modules']
-		job.setModules(modules)
-	except KeyError:
-		pass
 
 	try:
 		jar = prog['jar']
@@ -31,7 +24,7 @@ def makeCmd(name,prog):
 	if jar:
 		cmd += "java " + javavm + "-jar " + jar + " "
 	else:
-		cmd += name + " "
+		cmd += progName + " "
 
 	progArgs = prog['params']
 	for arg in progArgs:
@@ -42,81 +35,116 @@ def makeCmd(name,prog):
 		cmd += arg + " " + val + " "
 
 	job = sjm_writer.Job()
-	job.setName(name)
+	job.setSjmFile(sjmfile)
 
-	queue = False
-	try: 
-		queue = prog['queue']
-		job.setQueue(queue)
+
+	job.setCmd(cmd)
+
+
+	modules = False
+	try:
+		modules = prog['modules']
+		job.setModules(modules)
 	except KeyError:
 		pass
 
-	cwd = False
-	try:
-		cwd = prog['cwd']
-		job.setCwd(cwd)
-	except KeyError:
-		pass
+	qsub = prog['qsub']
+
+	job.setName(qsub['name'])
 
 	try:
-		qsub = prog['qsub']
+		job.setResource(qsub['mem'])
 	except KeyError:
 		#property not required
 		pass
 
-	if qsub:
-		try:
-			job.setResource(qsub['mem'])
-		except KeyError:
-			#property not required
-			pass
-	
-		try:
-			job.setResource(qsub['slots'])
-		except KeyError:
-			#property not required
-			pass
-	
-		try:
-			job.setResource(qsub['time'])
-		except KeyError:
-			#property not required
-			pass
+	try:
+		job.setResource(qsub['slots'])
+	except KeyError:
+		#property not required
+		pass
+
+	try:
+		job.setResource(qsub['time'])
+	except KeyError:
+		#property not required
+		pass
 
 
-		try:
-			job.setHost(qsub['host'])
-		except: KeyError:
-			#property not required
-			pass
+	try:
+		job.setPe(qsub['pe'])
+	except KeyError:
+		#property not required
 
-		try:
-			job.setProject9qsub['project'])
-		except: KeyError:
-			#property not required
-			pass
+	try:
+		job.setHost(qsub['host'])
+	except KeyError:
+		#property not required
+		pass
 
-	job.write
+	try: 
+		queue = qsub['queue']
+		job.setQueue(queue)
+	except KeyError:
+		#property not required
+		pass
+
+	try:
+		job.setProject(qsub['project'])
+	except KeyError:
+		#property not required
+		pass
+
+	try:
+		job.setCwd(qsub['cwd'])
+	except KeyError:
+		#property not required
+		pass
+
+
+	qsub_other = ""
+	for arg in qsub:
+		if arg not in coreQsubArgs:
+			qsub_other += arg + " " + qsub[arg] + "  "
+
+	if qsub_other:
+		job.setOtherOpts(qsub_other)
+
+	job.write()
 
 
 
+
+
+
+coreQsubArgs = ["time","mem","slots","pe","host","queue", "project","cwd","name"]
 
 description = ""
 parser = ArgumentParser(description=description)
+parser.add_argument('-s','--schema',default="/srv/gs1/software/gbsc/clinical_qc/schema.json", help="The JSON schema that will be used to validate the JSON configuration file. Default is %(default)s.")
 parser.add_argument('-c','--conf-file',required=True,help="Configuration file in JSON format.")
 parser.add_argument('-b','--bam-file',help="Mappings file in BAM format")
 parser.add_argument('--vcf-file',help="Varicant Call File in VCF format")
 parser.add_argument('-r','--reference',required=True,help="Reference genome in FASTA format")
 parser.add_argument('--out-dir',help="Output folder")
+parser.add_argument('-o','--outfile',required=True,help="Output SJM file.")
 parser.add_argument('-v','--verbose',help="Print extra details to stdout.")
 parser.add_argument('--no-run',action="store_true",help="Don't run the jobs, just generate sjm file.")
 
 args = parser.parse_args()
 
-conf = args.conf_file
+sjmfile = args.outfile
 
-jconf = json.load(open(conf,'r'))
+cfh = open(args.conf_file,'r')
+jconf = json.load(cfh)
 
+schema = args.schema
+print (schema)
+sfh = open(schema,'r')
+jschema = json.load(sfh)
+
+jsonschema.validate(jconf,jschema)
+#
 resources = False #such as reference, dbsnp, ...
 try:
 	resources = jconf['resources']
@@ -124,12 +152,14 @@ except KeyError:
 	pass
 
 for programName in jconf['programs']:
-	pdico = jconf['programName']
+#	print (programName)
+#	print (jconf['programs'][programName])
+	pdico = jconf['programs'][programName]
 	enable = pdico['enable']
 	if not enable:
 		continue
-	cmd = makeCmd(name,pdico)
-print ("hi")
+	cmd = makeCmd(programName,pdico,sjmfile)
+#print ("hi")
 
 
 

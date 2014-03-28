@@ -2,29 +2,34 @@
 
 { 
 
+
 	"resources": {
+		"email": "nathankw@stanford.edu",
 		"reference": "/path/to/hg19",
 		"dbsnp": "/path/to/dbsnp"
 	},
 	"programs": {
 
 		"DepthOfCoverage": {
-			"enable":1,
+			"enable": 1,
 			"modules":["gatk/3.0"],
-			"jar":"$GATK/GenomeAnalysisTK.jar",
-			"inputFormat":"bam",
-			"inputArg":"INPUT",
-			"outputArg":"OUTPUT",
+			"jar": "$GATK/GenomeAnalysisTK.jar",
+			"inputFormat": "bam",
+			"inputArg": "INPUT",
+			"outputArg": "OUTPUT",
 			"javavm": "-Xmx2G",
 			"qsub": {
-				"slots":10,
-				"mem":"3G",
-				"time":"7d"
+				"name": "depthOfCov",
+				"slots": 10,
+				"mem": "3G",
+				"-M": "$email",
+				"-m": "ba"
+				"-A": "clinical-services"
 			},
 			"params": {
 				"-T": "DepthOfCoverage",
-				"-R": "$references",
-				"-I": "$bam",
+				"-R": "$reference",
+				"-I": "bam",
 				"-o": "output.txt"
 			}
 		}
