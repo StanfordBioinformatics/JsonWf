@@ -62,7 +62,7 @@
 	
 							"pe":	{ "type": "string" },
 	
-							"account": { "type": "string"},
+							"account": { "type": "string"}
 						}
 					},
 	

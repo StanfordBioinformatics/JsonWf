@@ -4,7 +4,6 @@ class Job:
 	By default, a job will get 1 slot and 10G mem, and a time limit of 7 days.
 	"""
 	tab = "\t"	
-	slots = 1
 	mem = "10G"
 	queue = "seq_pipeline" #by default, soft and hard time=7d, no limit on mem
 	pe = "shm"
@@ -17,7 +16,8 @@ class Job:
 	def setDefaultMem(num):
 		mem = num
 
-	def __init__(self,name):
+	def __init__(self,name,writeMode='a'):
+		self.writeMode = writeMode
 		self.setName(name)
 		self.outfile = False
 		self.logfile = False
@@ -25,23 +25,27 @@ class Job:
 		self.wdir = False
 		self.modules = False
 		self.project = False
+		self.time = False
+		self.slots = False
 
 
-	def setOtherOpts(opts):
+	def setOtherOpts(self,opts):
 		self.otherOpts = opts
 
-	def addOtherOpt(opt):
+	def addOtherOpt(self,opt):
 		others = self.getOtherOpts()
 		others += " " + opt
 		self.setOtherOpts(others)
 
-	def setResource(resource,val):
+	def setResource(self,resource,val):
 		if resource == "slots":
 			self.slots = val
 		elif resource == "mem":
 			self.mem = val
 		elif resource == "time":
 			self.time = val 
+		else:
+			raise ValueError("Unrecognized resource {resource}".format(resource=resource))
 	
 
 	def setHost(self,host):
@@ -95,7 +99,7 @@ class Job:
 	def setOrder(self,order):
 		self.order = order
 
-	def getOtherOpts(self0:
+	def getOtherOpts(self):
 		return self.otherOpts
 
 	def getHost(self):
@@ -145,7 +149,7 @@ class Job:
 		"""
 		Opens the SJM file in append mode.
 		"""
-		fout = open(self.getSjmFile(),'a')
+		fout = open(self.getSjmFile(), self.writeMode)
 		logfile = self.getLogfile()
 		if logfile:
 			fout.write("log_dir " + logfile + "\n")
@@ -158,9 +162,13 @@ class Job:
 		mem = self.getMem()
 		fout.write(self.tab + "memory " + mem + "\n")
 		slots = self.getSlots()
-		fout.write(self.tab + "slots " + str(slots) + "\n")
+		if slots:
+			fout.write(self.tab + "slots " + str(slots) + "\n")
+
 		time = self.getTime()
-		fout.write(self.tab + "time " + time + "\n")
+		if time:
+			fout.write(self.tab + "time " + time + "\n")
+
 		queue = self.getQueue()
 		fout.write(self.tab + "queue " +  queue + "\n")
 		host = self.getHost()

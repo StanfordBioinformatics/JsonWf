@@ -22,8 +22,8 @@
 				"name": "depthOfCov",
 				"slots": 10,
 				"mem": "3G",
-				"-M": "$email",
-				"-m": "ba"
+				"-M": "$email:r",
+				"-m": "ba",
 				"-A": "clinical-services"
 			},
 			"params": {
