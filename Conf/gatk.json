@@ -5,6 +5,8 @@
 
 	"resources": {
 		"email": "nathankw@stanford.edu",
+		"mailWhen": "ba",
+		"billing": "test_account",
 		"reference": "/path/to/hg19",
 		"dbsnp": "/path/to/dbsnp"
 	},
@@ -14,24 +16,56 @@
 			"enable": 1,
 			"modules":["gatk/3.0"],
 			"jar": "$GATK/GenomeAnalysisTK.jar",
+			"javavm": "-Xmx2G",
 			"inputFormat": "bam",
 			"inputArg": "INPUT",
 			"outputArg": "OUTPUT",
-			"javavm": "-Xmx2G",
+
 			"qsub": {
-				"name": "depthOfCov",
+				"name": "DepthOfCoverage",
 				"slots": 10,
-				"mem": "3G",
-				"-M": "$email:r",
-				"-m": "ba",
-				"-A": "test"
+				"mem": "20G",
+				"-M": "$email",
+				"-m": "$mailWhen",
+				"-A": "$billing"
 			},
 			"params": {
+				"-nt": 10,
 				"-T": "DepthOfCoverage",
 				"-R": "$reference",
 				"-I": "bam",
 				"-o": "output.txt"
 			}
-		}
+		},
+
+		"VariantEval": {
+			"enable": 1,
+			"modules": ["gatk/3.0"],
+			"jar": "$GATK/GenomeAnalysisTK.jar",
+			"javavm": "-Xmx2G",
+			"inputFormat": "vcf",
+
+			"qsub": {
+				"name": "VariantEval",
+				"slots": 10,
+				"mem": "20G",
+				"-M": "$email",
+				"-m": "$mailWhen",
+				"-A": "$billing"
+			},
+
+			"params": {
+				"-nt": 10,
+				"-T": "VariantEval",
+				"-R": "$reference",
+				"--eval:set1,vcf": "$vcf",
+				"-o": "variantEval_metrics.txt",
+				"-noEV": "",
+				"-EV": "CountVariants",
+				"-EV": "TiTvVariantEvaluator",
+				"-noST": "",
+				"-ST": "VariantType"
+			}
+		}	
 	}
 }

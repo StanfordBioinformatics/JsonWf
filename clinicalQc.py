@@ -1,5 +1,7 @@
 #!/srv/gs1/software/python/python-2.7/bin/python
 
+import sys
+import os
 import json
 import sjm_writer
 from argparse import ArgumentParser
@@ -16,19 +18,21 @@ def expandVars(prog):
     if jtype == str or jtype == unicode:
       if j.startswith("$"):
         j = j.lstrip("$")
-        if j.endswith(":r"):
-          j = j.rstrip(":r")
-          cmdArg = False
-          try: 
-            cmdArg = args.__getattribute(j)
-          except AttributeError:
-            pass
-          if cmdArg:
-            prog[i] = cmdArg
-            print("Updating {j} to {cmdArg}".format(j=j,cmdArg=cmdArg))
-          else:
-            prog[i] = resources[j]
-            print("Updating {j} to {res}".format(j=j,res=resources[j]))
+        cmdArg = False
+        try: 
+          cmdArg = args.__getattribute__(j)
+        except AttributeError,err:
+          pass
+        print("#" + j + "#")
+        if cmdArg:
+          prog[i] = cmdArg
+          print("Updating {j} to {cmdArg}".format(j=j,cmdArg=cmdArg))
+        elif j in resources:
+          prog[i] = resources[j]
+          print("Updating {j} to {res}".format(j=j,res=resources[j]))
+        else:
+          #assume to be an enviroment variable
+          print >> sys.stderr, ("Assuming line {line} to contain an environment variable and not a resource".format(line=prog[i]))
         
     elif type(j) == dict:
       expandVars(j)		
@@ -36,6 +40,7 @@ def expandVars(prog):
 
 
 def makeCmd(progName,prog):	
+	print (progName)
 	cmd = ""
 
 	try:
@@ -57,16 +62,17 @@ def makeCmd(progName,prog):
 	progArgs = prog['params']
 	for arg in progArgs:
 		val = progArgs[arg] #val can be empty string if boolean option
-		if val.startswith("$"): #then it's a reference to a resources in the json file
-			val = val.lstrip("$")
-			val = resources[val] 
-		cmd += arg + " " + val + " "
+		val = str(val)
+		if val:
+			cmd += arg + " " + val + " "
+		else:
+			cmd += arg + " "
 
 
 	qsub = prog['qsub']
 	jobname = qsub['name']
 
-	job = sjm_writer.Job(jobname,writeMode)
+	job = sjm_writer.Job(jobname)
 	job.setSjmFile(sjmfile)
 	job.setCmd(cmd)
 
@@ -154,11 +160,10 @@ parser = ArgumentParser(description=description)
 parser.add_argument('-s','--schema',default="/srv/gs1/software/gbsc/clinical_qc/schema.json", help="The JSON schema that will be used to validate the JSON configuration file. Default is %(default)s.")
 parser.add_argument('-c','--conf-file',required=True,help="Configuration file in JSON format.")
 parser.add_argument('-b','--bam-file',help="Mappings file in BAM format")
-parser.add_argument('--vcf-file',help="Varicant Call File in VCF format")
+parser.add_argument('--vcf',help="Varicant Call File in VCF format")
 parser.add_argument('-r','--reference',required=True,help="Reference genome in FASTA format")
 parser.add_argument('--out-dir',help="Output folder")
 parser.add_argument('-o','--outfile',required=True,help="Output SJM file. Appends to it by default.")
-parser.add_argument('--no-append',action="store_true",help="Don't append to --outfile, but overwrite if it exists.")
 parser.add_argument('-v','--verbose',help="Print extra details to stdout.")
 parser.add_argument('--run',action="store_true",help="Don't just generate the sjm file, run it too.")
 
@@ -166,6 +171,8 @@ args = parser.parse_args()
 
 run = args.run
 sjmfile = args.outfile
+if os.path.exists(sjmfile):
+	os.remove(sjmfile)
 
 cfh = open(args.conf_file,'r')
 jconf = json.load(cfh)
@@ -181,10 +188,6 @@ try:
 	resources = jconf['resources']
 except KeyError:
 	pass
-
-writeMode = "a"
-if args.no_append:
-	writeMode = "w"
 
 for programName in jconf['programs']:
 #	print (programName)
@@ -207,4 +210,4 @@ if run:
 #sfh = open("test_schema.json",'r')
 #schema = json.load(sfh)
 
-#python clinicalQc.py -s schema.json -c Conf/gatk.json -r conf.json -o TEST/sjm.txt --no-append  
+#python clinicalQc.py -s schema.json -c Conf/gatk.json -r conf.json -o TEST/sjm.txt  2>stderr.txt 

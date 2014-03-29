@@ -16,8 +16,7 @@ class Job:
 	def setDefaultMem(num):
 		mem = num
 
-	def __init__(self,name,writeMode='a'):
-		self.writeMode = writeMode
+	def __init__(self,name):
 		self.setName(name)
 		self.outfile = False
 		self.logfile = False
@@ -149,7 +148,7 @@ class Job:
 		"""
 		Opens the SJM file in append mode.
 		"""
-		fout = open(self.getSjmFile(), self.writeMode)
+		fout = open(self.getSjmFile(), 'a')
 		logfile = self.getLogfile()
 		if logfile:
 			fout.write("log_dir " + logfile + "\n")
@@ -188,7 +187,7 @@ class Job:
 		if otherOpts:
 			fout.write(self.tab + "sched_options " + otherOpts + "\n")
 
-		fout.write("job_end\n")
+		fout.write("job_end\n\n")
 #		for dependency in self.getOrders():
 #			fout.write("order {jobname} after {dependency}\n".format(jobname=self.getName(),dependency=dependency))
 		fout.close()
