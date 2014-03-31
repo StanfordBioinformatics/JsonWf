@@ -1,15 +1,15 @@
 {
 	"$schema": "http://json-schema.org/draft-04/schema#",
 
-	"email": { "type": "string" },
-
 	"resources": {
 		"type": "object",
 	 	"properties": { 
 
 				"reference": { "type": "string" },
 
-				"dbsnp": { "type": "string"}
+				"dbsnp": { "type": "string"},
+
+				"email": { "type": "string" }
 		}
 	},
 	"programs": {

@@ -9,7 +9,15 @@ import jsonschema
 import subprocess
 
 
-	
+def rmComments(prog):
+	for i in prog.keys():
+		val = prog[i]
+		if i.startswith("#"):
+			print("REMOVING {0}".format(i))
+			prog.pop(i)	
+
+		elif type(val) == dict:
+			rmComments(val)
 
 def expandVars(prog):
   for i in prog:
@@ -18,25 +26,36 @@ def expandVars(prog):
     if jtype == str or jtype == unicode:
       if j.startswith("$"):
         j = j.lstrip("$")
+        path = j.split("/",1) #could be an environment variable at the begining of a path 
+        if len(path) == 2:
+          j = path[0]
+          path = path[1]
+        else:
+          path = False
+
         cmdArg = False
         try: 
           cmdArg = args.__getattribute__(j)
         except AttributeError,err:
           pass
-        print("#" + j + "#")
         if cmdArg:
-          prog[i] = cmdArg
-          print("Updating {j} to {cmdArg}".format(j=j,cmdArg=cmdArg))
+          val = cmdArg
         elif j in resources:
-          prog[i] = resources[j]
-          print("Updating {j} to {res}".format(j=j,res=resources[j]))
+          val = resources[j]
+
         else:
-          #assume to be an enviroment variable
-          print >> sys.stderr, ("Assuming line {line} to contain an environment variable and not a resource".format(line=prog[i]))
+          raise ValueError("In configuration file, varible {j} does not contain a resource and doens't match a command-line option.".format(j=j))
+
+        originalVal = val
+        if path:
+          val = os.path.join(val,path)
+
+        prog[i] = val
+        print("Updating {j} to {val}".format(j=j,val=originalVal))
         
-    elif type(j) == dict:
+    elif jtype == dict:
       expandVars(j)		
-			
+
 
 
 def makeCmd(progName,prog):	
@@ -70,11 +89,19 @@ def makeCmd(progName,prog):
 
 
 	qsub = prog['qsub']
+
 	jobname = qsub['name']
 
 	job = sjm_writer.Job(jobname)
 	job.setSjmFile(sjmfile)
 	job.setCmd(cmd)
+
+
+	try:
+		job.setCwd(qsub['cwd'])
+	except KeyError:
+		#poperty not required
+		pass
 
 	mem = "mem"
 	try:
@@ -161,7 +188,7 @@ parser.add_argument('-s','--schema',default="/srv/gs1/software/gbsc/clinical_qc/
 parser.add_argument('-c','--conf-file',required=True,help="Configuration file in JSON format.")
 parser.add_argument('-b','--bam-file',help="Mappings file in BAM format")
 parser.add_argument('--vcf',help="Varicant Call File in VCF format")
-parser.add_argument('-r','--reference',required=True,help="Reference genome in FASTA format")
+parser.add_argument('-r','--reference',help="Reference genome in FASTA format")
 parser.add_argument('--out-dir',help="Output folder")
 parser.add_argument('-o','--outfile',required=True,help="Output SJM file. Appends to it by default.")
 parser.add_argument('-v','--verbose',help="Print extra details to stdout.")
@@ -176,6 +203,8 @@ if os.path.exists(sjmfile):
 
 cfh = open(args.conf_file,'r')
 jconf = json.load(cfh)
+
+rmComments(jconf)
 
 schema = args.schema
 sfh = open(schema,'r')
@@ -210,4 +239,4 @@ if run:
 #sfh = open("test_schema.json",'r')
 #schema = json.load(sfh)
 
-#python clinicalQc.py -s schema.json -c Conf/gatk.json -r conf.json -o TEST/sjm.txt  2>stderr.txt 
+#python clinicalQc.py -s schema.json -c Conf/gatk.json -o TEST/sjm.txt  2>stderr.txt 

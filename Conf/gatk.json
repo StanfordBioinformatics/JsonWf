@@ -2,13 +2,13 @@
 
 { 
 
-
 	"resources": {
 		"email": "nathankw@stanford.edu",
-		"mailWhen": "ba",
+		"mailWhen": "a",
 		"billing": "test_account",
-		"reference": "/path/to/hg19",
-		"dbsnp": "/path/to/dbsnp"
+		"reference": "/srv/gs1/projects/scg/Resources/GATK/hg19/ucsc.hg19.fasta",
+		"dbsnp": "/path/to/dbsnp",
+		"GATK": "/srv/gs1/software/gatk/gatk-3.0/GenomeAnalysisTK-3.0-0/"
 	},
 	"programs": {
 
@@ -23,17 +23,18 @@
 
 			"qsub": {
 				"name": "DepthOfCoverage",
-				"slots": 10,
-				"mem": "20G",
+				"slots": 1,
+				"mem": "9G",
+				"project": "large_mem",
+				"cwd": "/srv/gs1/software/gbsc/clinical_qc",
 				"-M": "$email",
 				"-m": "$mailWhen",
-				"-A": "$billing"
+				"#-A": "$billing"
 			},
 			"params": {
-				"-nt": 10,
 				"-T": "DepthOfCoverage",
 				"-R": "$reference",
-				"-I": "bam",
+				"-I": "/srv/gs1/software/gbsc/clinical_qc/TEST/chr20_80K.bam",
 				"-o": "output.txt"
 			}
 		},
@@ -47,8 +48,10 @@
 
 			"qsub": {
 				"name": "VariantEval",
-				"slots": 10,
-				"mem": "20G",
+				"slots": 1,
+				"mem": "9G",
+				"project": "large_mem",
+				"cwd": "/srv/gs1/software/gbsc/clinical_qc",
 				"-M": "$email",
 				"-m": "$mailWhen",
 				"-A": "$billing"
@@ -58,11 +61,10 @@
 				"-nt": 10,
 				"-T": "VariantEval",
 				"-R": "$reference",
-				"--eval:set1,vcf": "$vcf",
+				"--eval:set1,vcf": "/srv/gs1/software/gbsc/clinical_qc/TEST/chr20.vcf",
 				"-o": "variantEval_metrics.txt",
 				"-noEV": "",
-				"-EV": "CountVariants",
-				"-EV": "TiTvVariantEvaluator",
+				"-EV CountVariants -EV TiTvVariantEvaluator": "",
 				"-noST": "",
 				"-ST": "VariantType"
 			}

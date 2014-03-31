@@ -18,6 +18,7 @@ class Job:
 
 	def __init__(self,name):
 		self.setName(name)
+#		self.queue = False
 		self.outfile = False
 		self.logfile = False
 		self.host = False
@@ -26,6 +27,7 @@ class Job:
 		self.project = False
 		self.time = False
 		self.slots = False
+		self.cwd = False
 
 
 	def setOtherOpts(self,opts):
@@ -169,7 +171,8 @@ class Job:
 			fout.write(self.tab + "time " + time + "\n")
 
 		queue = self.getQueue()
-		fout.write(self.tab + "queue " +  queue + "\n")
+		if queue:
+			fout.write(self.tab + "queue " +  queue + "\n")
 		host = self.getHost()
 		if host:
 			fout.write(self.tab + "host " + host + "\n")
@@ -177,11 +180,10 @@ class Job:
 		if project:
 			fout.write(self.tab + "project " + project + "\n")
 
-		try:
-			cwd = self.getCwd()
+
+		cwd = self.getCwd()
+		if cwd:
 			fout.write(self.tab + "directory " + cwd + "\n") 
-		except AttributeError:
-			pass
 
 		otherOpts = self.getOtherOpts()
 		if otherOpts:
