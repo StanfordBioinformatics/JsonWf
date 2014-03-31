@@ -32,10 +32,10 @@ define common keys that can appear in multiple analyses. A reference can be
 made to a resource in the value of any analysis key by prefixing the
 resource name with a '$', however, the reference must be at the beginning of
 the value. For example, if we have the reference 
-								"email": "jdoe@gmail.com"
+					"email": "jdoe@gmail.com"
 then it is possible for all analyses to reference this email address in each
 analysis's qsub object, i.e.
-								 "-M": "$email"
+					 "-M": "$email"
 
 
 Read the schema for a full understanding of the structure and semantics of a
