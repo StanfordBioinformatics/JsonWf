@@ -9,7 +9,11 @@ import jsonschema
 import subprocess
 
 
-def rmComments(prog):
+def rmComments(dico):
+	"""
+	Function : Given a dict, removes keys that start with a "#", which are taken to be a comment.
+	Args     : dico - dict
+	"""
 	for i in prog.keys():
 		val = prog[i]
 		if i.startswith("#"):
@@ -20,6 +24,14 @@ def rmComments(prog):
 			rmComments(val)
 
 def expandVars(prog):
+	"""
+	Function : Given the dict 'prog' (a dictionary with program information), look at all setting values and find any variables (words beginning with '$') 
+		         and check if a parameter with the same name (omitting the '$') exists in the global resources dict or as a command-line option.
+						 Together, resources include the global resoruce dict and the command-line (CL) args, where a CL arg overrides all. If such a resource
+						 exists, then in 'prog' replace the variable with the resource value.  Works recursivly for a dict within a dict.
+
+	Args     : prog - dict structured as an 'analyses' object in the json schema
+	"""
   for i in prog:
     j = prog[i]
     jtype = type(j)
@@ -59,7 +71,11 @@ def expandVars(prog):
 
 
 def makeCmd(progName,prog):	
-	print (progName)
+	"""
+	Function : String together a command and it's arguments from the input dictionary.
+	Args     : progName - str. Name of the program (i.e. the executable)
+						 prog - dict structured as an 'analyses' object in the json schema.
+	"""
 	cmd = ""
 
 	try:
@@ -218,10 +234,9 @@ try:
 except KeyError:
 	pass
 
-for programName in jconf['programs']:
-#	print (programName)
-#	print (jconf['programs'][programName])
-	pdico = jconf['programs'][programName]
+for programName in jconf['analyses']:
+#	print (jconf['analyses'][programName])
+	pdico = jconf['analyses'][programName]
 	enable = pdico['enable']
 	if not enable:
 		continue

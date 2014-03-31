@@ -12,7 +12,7 @@
 				"email": { "type": "string" }
 		}
 	},
-	"programs": {
+	"analyses": {
 		"type": "array",
 		"items": {
 			"type": "object",
