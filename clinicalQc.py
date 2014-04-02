@@ -14,24 +14,24 @@ def rmComments(dico):
 	Function : Given a dict, removes keys that start with a "#", which are taken to be a comment.
 	Args     : dico - dict
 	"""
-	for i in prog.keys():
-		val = prog[i]
+	for i in dico.keys():
+		val = dico[i]
 		if i.startswith("#"):
 			print("REMOVING {0}".format(i))
-			prog.pop(i)	
+			dico.pop(i)	
 
 		elif type(val) == dict:
 			rmComments(val)
 
 def expandVars(prog):
-	"""
-	Function : Given the dict 'prog' (a dictionary with program information), look at all setting values and find any variables (words beginning with '$') 
-		         and check if a parameter with the same name (omitting the '$') exists in the global resources dict or as a command-line option.
-						 Together, resources include the global resoruce dict and the command-line (CL) args, where a CL arg overrides all. If such a resource
-						 exists, then in 'prog' replace the variable with the resource value.  Works recursivly for a dict within a dict.
+  """
+  Function : Given the dict 'prog' (a dictionary with program information), look at all setting values and find any variables (words beginning with '$') 
+             and check if a parameter with the same name (omitting the '$') exists in the global resources dict or as a command-line option.
+             Together, resources include the global resoruce dict and the command-line (CL) args, where a CL arg overrides all. If such a resource
+             exists, then in 'prog' replace the variable with the resource value.  Works recursivly for a dict within a dict.
 
-	Args     : prog - dict structured as an 'analyses' object in the json schema
-	"""
+ Args     : prog - dict structured as an 'analyses' object in the json schema
+  """
   for i in prog:
     j = prog[i]
     jtype = type(j)
@@ -99,7 +99,10 @@ def makeCmd(progName,prog):
 		val = progArgs[arg] #val can be empty string if boolean option
 		val = str(val)
 		if val:
-			cmd += arg + " " + val + " "
+			if arg.endswith("="):
+				cmd += arg + val + " "
+			else:
+				cmd += arg + " " + val + " "
 		else:
 			cmd += arg + " "
 

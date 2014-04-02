@@ -8,7 +8,9 @@
 		"billing": "clinical-services",
 		"reference": "/srv/gs1/projects/scg/Resources/GATK/hg19/ucsc.hg19.fasta",
 		"dbsnp": "/path/to/dbsnp",
-		"GATK": "/srv/gs1/software/gatk/gatk-3.0/GenomeAnalysisTK-3.0-0/"
+		"GATK": "/srv/gs1/software/gatk/gatk-3.0/GenomeAnalysisTK-3.0-0/",
+		"PICARD": "/srv/gs1/software/picard-tools/picard-tools-1.32",
+		"cwd": "/srv/gs1/software/gbsc/clinical_qc"
 	},
 	"analyses": {
 
@@ -16,20 +18,18 @@
 			"enable": 1,
 			"modules":["gatk/3.0"],
 			"jar": "$GATK/GenomeAnalysisTK.jar",
-			"javavm": "-Xmx2G",
+			"javavm": "-Xmx8G",
 			"inputFormat": "bam",
-			"inputArg": "INPUT",
-			"outputArg": "OUTPUT",
+			"inputArg": "-I",
 
 			"qsub": {
 				"name": "DepthOfCoverage",
 				"slots": 1,
-				"mem": "6G",
-				"#project": "large_mem",
-				"cwd": "/srv/gs1/software/gbsc/clinical_qc",
+				"mem": "12G",
+				"cwd": "$cwd",
 				"-M": "$email",
 				"-m": "$mailWhen",
-				"#-A": "$billing"
+				"-A": "$billing"
 			},
 			"params": {
 				"-T": "DepthOfCoverage",
@@ -37,6 +37,34 @@
 				"-R": "$reference",
 				"-I": "/srv/gs1/software/gbsc/clinical_qc/TEST/chr20_80K.bam",
 				"-o": "coverage_hist.txt"
+			}
+		},
+
+		"Concordance": {
+			"enable": 1,
+			"modules":["gatk/3.0"],
+			"jar": "$GATK/GenomeAnalysisTK.jar",
+			"javavm": "-Xmx8G",
+			"inputFormat": "vcf",
+			"inputArg": "--variant",
+			"outputArg": "-o",
+
+			"qsub": {
+				"name": "SelectVariants_concordance",
+				"slots": 1,
+				"mem": "12G",
+				"cwd": "$cwd",
+				"-M": "$email",
+				"-m": "$mailWhen",
+				"-A": "$billing"
+			},
+			"params": {
+				"-T": "SelectVariants",
+				"--variant": "",
+				"--concordance": "",
+				"-L": "chr20:59998-248123",
+				"-R": "$reference",
+				"-o": "concordance.vcf"
 			}
 		},
 
@@ -51,8 +79,7 @@
 				"name": "VariantEval",
 				"slots": 1,
 				"mem": "6G",
-				"#project": "large_mem",
-				"cwd": "/srv/gs1/software/gbsc/clinical_qc",
+				"cwd": "$cwd",
 				"-M": "$email",
 				"-m": "$mailWhen",
 				"-A": "$billing"
@@ -70,6 +97,88 @@
 				"-noST": "",
 				"-ST": "VariantType"
 			}
-		}	
+		},
+
+		"CollectAlignmentSummaryMetrics": {
+			"enable": 1,
+			"modules": ["picard-tools/1.32"],
+			"jar": "$PICARD/CollectAlignmentSummaryMetrics.jar",
+			"javavm": "-Xmx4G",
+			"inputFormat": "bam",
+			
+			"qsub": {
+				"name": "CollectAlignmentSummaryMetrics",
+				"slots": 1,
+				"mem": "8G",
+				"cwd": "$cwd",
+				"-M": "$email",
+				"-m": "$mailWhen",
+				"-A": "$billing"
+			},
+		
+			"params": {
+				"ASSUME_SORTED=": "true",
+				"INPUT=": "",
+				"OUTPUT=": "",
+				"REFERENCE_SEQUENCE=": "$reference",
+				"METRIC_ACCUMULATION_LEVEL=": "ALL_READS"
+			}
+		},
+
+			"CollectGcBiasMetrics" {
+				"enable": 1,
+				"modules": ["picard-tools/1.32","r"],
+				"jar": "$PICARD/CollectGcBiasMetrics.jar",
+				"javavm": "-Xmx4G",
+				"inputFormat": "bam",
+				
+				"qsub": {
+					"name": "CollectGcBiasMetrics",
+					"slots": 1,
+					"mem": "8G",
+					"cwd": "$cwd",
+					"-M": "$email",
+					"-m": "$mailWhen",
+					"-A": "$billing"
+				},
+			
+				"params": {
+					"ASSUME_SORTED=": "true",
+					"INPUT=": "",
+					"OUTPUT=": "",
+					"REFERENCE_SEQUENCE=": "$reference",
+					"SUMMARY_OUTPUT=": "",
+					"CHART_OUTPUT=": "",
+			}
+		},
+
+			"CollectInsertSizeMetrics" {
+				"enable": 1,
+				"modules": ["picard-tools/1.32","r"],
+				"jar": "$PICARD/CollectInsertSizeMetrics.jar",
+				"javavm": "-Xmx8G",
+				"inputFormat": "bam",
+				
+				"qsub": {
+					"name": "CollectInsertSizeMetrics",
+					"slots": 1,
+					"mem": "10G",
+					"cwd": "$cwd",
+					"-M": "$email",
+					"-m": "$mailWhen",
+					"-A": "$billing"
+				},
+			
+				"params": {
+					"ASSUME_SORTED=": "true",
+					"INPUT=": "",
+					"OUTPUT=": "",
+					"REFERENCE_SEQUENCE=": "$reference",
+					"METRIC_ACCUMULATION_LEVEL=": "ALL_READS",
+					"HISTOGRAM_FILE=": ""
+				}
+			}
+
+		
 	}
 }
