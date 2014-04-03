@@ -7,11 +7,14 @@
 
 				"reference": { "type": "string" },
 
-				"dbsnp": { "type": "string"},
-
-				"email": { "type": "string" }
+				"dbsnp": { "type": "string"}
 		}
 	},
+
+	"qsub": {
+		"type": "object"
+	},
+			
 	"analyses": {
 		"type": "array",
 		"items": {
@@ -19,7 +22,7 @@
 			"additionalProperties": false,
 			"properties": {
 
-				"required": ["id","status"],
+				"required": ["id","enable","qsub"],
 				"properties": {
 			
 					"id": { "type": "integer" },

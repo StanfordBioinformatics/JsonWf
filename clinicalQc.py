@@ -56,7 +56,8 @@ def expandVars(prog):
           val = resources[j]
 
         else:
-          raise ValueError("In configuration file, varible {j} does not contain a resource and doens't match a command-line option.".format(j=j))
+          msg = "In configuration file, varible {j} does not contain a resource and doens't match a command-line option.".format(j=j)
+          raise ValueError(msg)
 
         originalVal = val
         if path:
@@ -115,9 +116,8 @@ def makeCmd(progName,prog):
 	job.setSjmFile(sjmfile)
 	job.setCmd(cmd)
 
-
 	try:
-		job.setCwd(qsub['cwd'])
+		job.setCwd(qsub['directory'])
 	except KeyError:
 		#poperty not required
 		pass
@@ -170,7 +170,7 @@ def makeCmd(progName,prog):
 		pass
 
 	try:
-		job.setCwd(qsub['cwd'])
+		job.setCwd(qsub['directory'])
 	except KeyError:
 		#property not required
 		pass
@@ -197,18 +197,16 @@ def makeCmd(progName,prog):
 
 
 
-
-
-coreQsubArgs = ["time","mem","slots","pe","host","queue", "project","cwd","name"]
+coreQsubArgs = ["time","mem","slots","pe","host","queue", "project","directory","name"]
 
 description = ""
 parser = ArgumentParser(description=description)
 parser.add_argument('-s','--schema',default="/srv/gs1/software/gbsc/clinical_qc/schema.json", help="The JSON schema that will be used to validate the JSON configuration file. Default is %(default)s.")
 parser.add_argument('-c','--conf-file',required=True,help="Configuration file in JSON format.")
-parser.add_argument('-b','--bam-file',help="Mappings file in BAM format")
+parser.add_argument('-b','--bam',help="Mappings file in BAM format")
 parser.add_argument('--vcf',help="Varicant Call File in VCF format")
-parser.add_argument('-r','--reference',help="Reference genome in FASTA format")
-parser.add_argument('--out-dir',help="Output folder")
+parser.add_argument('-r','--reference',help="Reference genome in FASTA format. Overrides variable setting in conf file if present.")
+parser.add_argument('--directory',help="Path to use as the Current Working Directory when running jobs. Overrides variable setting in conf file if present.")
 parser.add_argument('-o','--outfile',required=True,help="Output SJM file. Appends to it by default.")
 parser.add_argument('-v','--verbose',help="Print extra details to stdout.")
 parser.add_argument('--run',action="store_true",help="Don't just generate the sjm file, run it too.")
@@ -237,12 +235,23 @@ try:
 except KeyError:
 	pass
 
+globalQsub = False
+try:
+	globalQsub = jconf['qsub']
+except KeyError:
+	pass
+
 for programName in jconf['analyses']:
 #	print (jconf['analyses'][programName])
 	pdico = jconf['analyses'][programName]
 	enable = pdico['enable']
 	if not enable:
 		continue
+	if globalQsub: #then add global qsub options to all analyses
+		qsubDico = pdico['qsub']	
+		for i in globalQsub:
+			if i not in qsubDico: #don't overwite!
+				qsubDico[i] = globalQsub[i]
 	expandVars(pdico) #replace resoruce variables with their resource values
 	cmd = makeCmd(programName,pdico)
 
