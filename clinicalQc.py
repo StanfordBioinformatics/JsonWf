@@ -47,8 +47,8 @@ def expandVars(prog):
 
         cmdArg = False
         try: 
-          cmdArg = args.__getattribute__(j)
-        except AttributeError,err:
+          cmdArg = resdico[j]
+        except KeyError:
           pass
         if cmdArg:
           val = cmdArg
@@ -203,15 +203,18 @@ description = ""
 parser = ArgumentParser(description=description)
 parser.add_argument('-s','--schema',default="/srv/gs1/software/gbsc/clinical_qc/schema.json", help="The JSON schema that will be used to validate the JSON configuration file. Default is %(default)s.")
 parser.add_argument('-c','--conf-file',required=True,help="Configuration file in JSON format.")
-parser.add_argument('-b','--bam',help="Mappings file in BAM format")
-parser.add_argument('--vcf',help="Varicant Call File in VCF format")
-parser.add_argument('-r','--reference',help="Reference genome in FASTA format. Overrides variable setting in conf file if present.")
-parser.add_argument('--directory',help="Path to use as the Current Working Directory when running jobs. Overrides variable setting in conf file if present.")
+parser.add_argument('resources',nargs="*",help="One or more space-delimited key=value resources that can override or append to the keys of the resoruce object in the JSON conf file.")
 parser.add_argument('-o','--outfile',required=True,help="Output SJM file. Appends to it by default.")
 parser.add_argument('-v','--verbose',help="Print extra details to stdout.")
 parser.add_argument('--run',action="store_true",help="Don't just generate the sjm file, run it too.")
 
 args = parser.parse_args()
+resources = args.resources
+resdico = {}
+if resources:
+	for i in resources:
+		key,val = i.split("=")	
+		resdico[key] = val
 
 run = args.run
 sjmfile = args.outfile
