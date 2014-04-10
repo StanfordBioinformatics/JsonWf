@@ -76,6 +76,7 @@
 
 			"params": {
 				"-T": "SelectVariants",
+				"-L": "chr20:61795-62965366",
 				"-nt": 10,
 				"--variant": "$vcf",
 				"--concordance": "$dbsnp",
@@ -101,6 +102,7 @@
 
 			"params": {
 				"-T": "SelectVariants",
+				"-L": "chr20:61795-62965366",
 				"-nt" : 10,
 				"--variant": "$vcf",
 				"--discordance": "$dbsnp",

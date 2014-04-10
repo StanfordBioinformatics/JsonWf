@@ -26,9 +26,8 @@ def rmComments(dico):
 def expandVars(prog):
   """
   Function : Given the dict 'prog' (a dictionary with program information), look at all setting values and find any variables (words beginning with '$') 
-             and check if a parameter with the same name (omitting the '$') exists in the global resources dict or as a command-line option.
-             Together, resources include the global resoruce dict and the command-line (CL) args, where a CL arg overrides all. If such a resource
-             exists, then in 'prog' replace the variable with the resource value.  Works recursivly for a dict within a dict.
+             and check if a parameter with the same name (omitting the '$') exists in the global resources dict.
+             Works recursivly for a dict within a dict.
 
  Args     : prog - dict structured as an 'analyses' object in the json schema
   """
@@ -199,7 +198,8 @@ def makeCmd(progName,prog):
 
 coreQsubArgs = ["time","mem","slots","pe","host","queue", "project","directory","name"]
 
-description = ""
+description = "Given a JSON configuration file that abides by the packaged schema.json file, this program will validate the conf file, then build an SJM file. Variable substitution is also supported, whereby any value in the conf file that begins with a '$' may be replaced by a global resource that is specified either on the command-line (CL) as an argument, or in the conf file itself. In the conf file, resources include the global resource and qsub objects.  CL-set resources override conf file resources."
+
 parser = ArgumentParser(description=description)
 parser.add_argument('-s','--schema',default="/srv/gs1/software/gbsc/clinical_qc/schema.json", help="The JSON schema that will be used to validate the JSON configuration file. Default is %(default)s.")
 parser.add_argument('-c','--conf-file',required=True,help="Configuration file in JSON format.")
@@ -209,12 +209,6 @@ parser.add_argument('-v','--verbose',help="Print extra details to stdout.")
 parser.add_argument('--run',action="store_true",help="Don't just generate the sjm file, run it too.")
 
 args = parser.parse_args()
-resources = args.resources
-resdico = {}
-if resources:
-	for i in resources:
-		key,val = i.split("=")	
-		resdico[key] = val
 
 run = args.run
 sjmfile = args.outfile
@@ -232,17 +226,39 @@ jschema = json.load(sfh)
 
 jsonschema.validate(jconf,jschema)
 #
-resources = False #such as reference, dbsnp, ...
+resources = args.resources
+resdico = {}
+if resources:
+	for i in resources:
+		key,val = i.split("=")	
+		resdico[key] = val
+
+jsonResources = False
 try:
-	resources = jconf['resources']
+	jsonResources = jconf['resources']
 except KeyError:
 	pass
+
+#if jsonResources exists, then add it's keys and values to resources dict, but
+# only if the key doens't exist already.
+for i  in jsonResources:
+	if i not in resources:
+		resources[i] = jsonResources[i]
+	
 
 globalQsub = False
 try:
 	globalQsub = jconf['qsub']
 except KeyError:
 	pass
+
+globalQsub_intersect = set(resources).intersection(globalQsub)	
+if globalQsub_intersect:
+	for res in globalQsub_intersect:
+		sys.stderr.write("Qsub resource {res} in conf file {conf} clashes with a resource by the same name in the conf file's 'resource' object.\n".format(res=res,conf=args.conf_file))		
+	raise Exception("Exiting due to resource key clashes.")
+else:
+	resources.update(globalQsub)
 
 for programName in jconf['analyses']:
 #	print (jconf['analyses'][programName])
@@ -251,7 +267,11 @@ for programName in jconf['analyses']:
 	if not enable:
 		continue
 	if globalQsub: #then add global qsub options to all analyses
-		qsubDico = pdico['qsub']	
+		qsubDico = {}
+		try:
+			qsubDico = pdico['qsub']	
+		except KeyError:
+			pass
 		for i in globalQsub:
 			if i not in qsubDico: #don't overwite!
 				qsubDico[i] = globalQsub[i]
