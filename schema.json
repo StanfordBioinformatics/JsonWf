@@ -71,7 +71,11 @@
 	
 					"params": {
 						"type": "object"
-					}
+					},
+	
+					"args": {
+						"description": "An array of command-line arguments.",
+						"type": "array"
 				}
 			}
 		}

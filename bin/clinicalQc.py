@@ -24,49 +24,59 @@ def rmComments(dico):
 			rmComments(val)
 
 def expandVars(prog):
-  """
-  Function : Given the dict 'prog' (a dictionary with program information), look at all setting values and find any variables (words beginning with '$') 
+	"""
+	Function : Given the dict 'prog' (a dictionary with program information), look at all setting values and find any variables (words beginning with '$') 
              and check if a parameter with the same name (omitting the '$') exists in the global resdico dict.
              Works recursivly for a dict within a dict.
 
- Args     : prog - dict structured as an 'analyses' object in the json schema
-  """
-  for i in prog:
-    j = prog[i]
-    jtype = type(j)
-    if jtype == str or jtype == unicode:
-      if j.startswith("$"):
-        j = j.lstrip("$")
-        path = j.split("/",1) #could be an environment variable at the begining of a path 
-        if len(path) == 2:
-          j = path[0]
-          path = path[1]
-        else:
-          path = False
+	Args     : prog - dict structured as an 'analyses' object in the json schema
+	"""
+	for key in prog:
+		val = prog[key]
+		valType = type(val)
+		if valType == str or valType == unicode:
+			resourceValue = checkResource(val)
+			if resourceValue:
+				prog[key] = resourceValue
+				print("Updating {val} to {resourceValue}".format(val=val,resourceValue=resourceValue))
+   
+		elif valType == list or valType == tuple:
+			count = -1
+			for part in val:
+				count += 1
+				resourceValue= checkResource(part)
+				if resourceValue:
+					prog[key][count] = resourceValue
+					print("Updating {val} to {resourceValue}".format(val=prog[key][count],resourceValue=resourceValue))
+					
+		elif valType == dict:
+			expandVars(val)		
 
-        cmdArg = False
-        try: 
-          cmdArg = resdico[j]
-        except KeyError:
-          pass
-        if cmdArg:
-          val = cmdArg
-        elif j in resdico:
-          val = resdico[j]
 
-        else:
-          msg = "In configuration file, varible {j} does not contain a resource and doens't match a command-line option.".format(j=j)
-          raise ValueError(msg)
+def checkResource(key):
+	
+	if not key.startswith("$"):
+		return False
+	key = key.lstrip("$")
+	path = key.split("/",1) #could be an environment variable at the begining of a path 
+	if len(path) == 2:
+		key = path[0]
+		path = path[1]
+	else:
+		path = False
 
-        originalVal = val
-        if path:
-          val = os.path.join(val,path)
+	val = False
+	try: 
+		val = resdico[key]
+	except KeyError:
+		raise ValueError("In configuration file, varible {key} does not contain a resource.".format(key=key))
 
-        prog[i] = val
-        print("Updating {j} to {val}".format(j=j,val=originalVal))
+	if path:
+		val = os.path.join(val,path)
+
+	return val
         
-    elif jtype == dict:
-      expandVars(j)		
+
 
 
 
@@ -95,9 +105,9 @@ def makeCmd(progName,prog):
 	else:
 		cmd += progName + " "
 
-	progArgs = prog['params']
-	for arg in progArgs:
-		val = progArgs[arg] #val can be empty string if boolean option
+	progOptions = prog['params']
+	for arg in progOptions:
+		val = progOptions[arg] #val can be empty string if boolean option
 		val = str(val)
 		if val:
 			if arg.endswith("="):
@@ -107,6 +117,14 @@ def makeCmd(progName,prog):
 		else:
 			cmd += arg + " "
 
+	progArgs = False
+	try:
+		progArgs =  prog['args'] 
+	except KeyError:
+		pass
+	if progArgs:
+		for arg in progArgs:
+			cmd += " " + arg + " "
 
 	qsub = prog['qsub']
 
