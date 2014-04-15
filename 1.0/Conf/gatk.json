@@ -1,0 +1,214 @@
+{ 
+
+	"resources": {
+		"reference": "/srv/gs1/projects/scg/Resources/GATK/hg19/ucsc.hg19.fasta",
+		"vcf": "/srv/gsfs0/projects/gbsc/benchmark/giab/NA12878.clia/hugeseq-1.3/hc2/manual-QC/SAMPLE.vcf",
+		"dbsnp": "/srv/gs1/projects/scg/Resources/GATK/hg19-3.0/dbsnp_138.hg19.vcf",
+		"GATK": "/srv/gs1/software/gatk/gatk-3.0/GenomeAnalysisTK-3.0-0/",
+		"PICARD": "/srv/gs1/software/picard-tools/1.111",
+		"ACMG_Genes": "/srv/gsfs0/projects/gbsc/Clinical_Service/dbases/ACMG/ACMG_genes.bed"
+	},
+
+	"qsub": {
+		"directory": "/srv/gsfs0/projects/gbsc/benchmark/giab/NA12878.clia/hugeseq-1.3/hc2/manual-QC/nathankw/Concordance",
+		"-M": "nathankw@stanford.edu",
+		"-m": "ba",
+		"-A": "clinical-services",
+		"-R": "y"
+	},
+	
+	"analyses": {
+
+		"FastQC": {
+			"enable": 0,
+			"modules": ["fastqc/0.10.1"],
+			"inputFormat": "fastq",
+			"inputArg": "null",
+
+			"qsub": {
+				"name": "fastqc",
+				"slots": 5,
+				"mem": "500M"
+			},
+		
+			"params": {
+				"--threads": 5,
+				"--outdir": "$directory"
+			}
+		},
+
+		"DepthOfCoverage": {
+			"enable": 0,
+			"modules":["gatk/3.0"],
+			"jar": "$GATK/GenomeAnalysisTK.jar",
+			"javavm": "-Xmx8G",
+			"inputFormat": "bam",
+			"inputArg": "-I",
+
+			"qsub": {
+				"name": "DepthOfCoverage",
+				"slots": 1,
+				"mem": "12G"
+			},
+
+			"params": {
+				"-T": "DepthOfCoverage",
+				"-L": "chr20:59998-248123",
+		    "-L": "/srv/gsfs0/projects/gbsc/Clinical_Service/dbases/ACMG/ACMG_genes.bed",
+				"-R": "$reference",
+				"-I": "/srv/gs1/software/gbsc/clinical_qc/TEST/chr20_80K.bam",
+				"-o": "coverage_hist.txt"
+			}
+		},
+
+		"Concordance": {
+			"enable": 1,
+			"modules":["gatk/3.0"],
+			"jar": "$GATK/GenomeAnalysisTK.jar",
+			"javavm": "-Xmx8G",
+			"inputFormat": "vcf",
+			"inputArg": "--variant",
+			"outputArg": "-o",
+
+			"qsub": {
+				"name": "SelectVariants_concordance",
+				"slots": 10,
+				"mem": "1G"
+			},
+
+			"params": {
+				"-T": "SelectVariants",
+				"-L": "chr20:61795-62965366",
+		    "-L": "/srv/gsfs0/projects/gbsc/Clinical_Service/dbases/ACMG/ACMG_genes.bed",
+				"-nt": 10,
+				"--variant": "$vcf",
+				"--concordance": "$dbsnp",
+				"-R": "$reference",
+				"-o": "concordance.vcf"
+			}
+		},
+
+		"Discordance": {
+			"enable": 0,
+			"modules":["gatk/3.0"],
+			"jar": "$GATK/GenomeAnalysisTK.jar",
+			"javavm": "-Xmx8G",
+			"inputFormat": "vcf",
+			"inputArg": "--variant",
+			"outputArg": "-o",
+
+			"qsub": {
+				"name": "SelectVariants_discordance",
+				"slots": 10,
+				"mem": "1G"
+			},
+
+			"params": {
+				"-T": "SelectVariants",
+				"-L": "chr20:61795-62965366",
+		    "-L": "/srv/gsfs0/projects/gbsc/Clinical_Service/dbases/ACMG/ACMG_genes.bed",
+				"-nt" : 10,
+				"--variant": "$vcf",
+				"--discordance": "$dbsnp",
+				"-R": "$reference",
+				"-o": "discordance.vcf"
+			}
+		},
+
+		"VariantEval": {
+			"enable": 0,
+			"modules": ["gatk/3.0"],
+			"jar": "$GATK/GenomeAnalysisTK.jar",
+			"javavm": "-Xmx2G",
+			"inputFormat": "vcf",
+
+			"qsub": {
+				"name": "VariantEval",
+				"slots": 1,
+				"mem": "6G"
+			},
+
+			"params": {
+				"-nt": 10,
+				"-T": "VariantEval",
+				"-L": "chr20:61795-62965366",
+		    "-L": "/srv/gsfs0/projects/gbsc/Clinical_Service/dbases/ACMG/ACMG_genes.bed",
+				"-R": "$reference",
+				"--eval:set1,vcf": "/srv/gs1/software/gbsc/clinical_qc/TEST/chr20.vcf",
+				"-o": "variantEval_metrics.txt",
+				"-noEV": "",
+				"-EV CountVariants -EV TiTvVariantEvaluator": "",
+				"-noST": "",
+				"-ST": "VariantType"
+			}
+		},
+
+		"CollectAlignmentSummaryMetrics": {
+			"enable": 0,
+			"modules": ["picard-tools/1.32"],
+			"jar": "$PICARD/CollectAlignmentSummaryMetrics.jar",
+			"javavm": "-Xmx4G",
+			"inputFormat": "bam",
+			
+			"qsub": {
+				"name": "CollectAlignmentSummaryMetrics",
+				"slots": 1,
+				"mem": "8G"
+			},
+		
+			"params": {
+				"ASSUME_SORTED=": "true",
+				"INPUT=": "$bam",
+				"OUTPUT=": "alnSummaryMetrics.txt",
+				"REFERENCE_SEQUENCE=": "$reference",
+				"METRIC_ACCUMULATION_LEVEL=": "ALL_READS"
+			}
+		},
+
+		"CollectGcBiasMetrics": {
+			"enable": 0,
+			"modules": ["picard-tools/1.32","r"],
+			"jar": "$PICARD/CollectGcBiasMetrics.jar",
+			"javavm": "-Xmx4G",
+			"inputFormat": "bam",
+			
+			"qsub": {
+				"name": "CollectGcBiasMetrics",
+				"slots": 1,
+				"mem": "8G"
+			},
+		
+			"params": {
+				"ASSUME_SORTED=": "true",
+				"INPUT=": "$bam",
+				"OUTPUT=": "gcBiasMetrics.txt",
+				"REFERENCE_SEQUENCE=": "$reference",
+				"SUMMARY_OUTPUT=": "gcBiasMetrics_summary.txt",
+				"CHART_OUTPUT=": "gcBiasMetrics_chart.txt"
+			}
+		},
+
+		"CollectInsertSizeMetrics": {
+			"enable": 0,
+			"modules": ["picard-tools/1.32","r"],
+			"jar": "$PICARD/CollectInsertSizeMetrics.jar",
+			"javavm": "-Xmx8G",
+			"inputFormat": "bam",
+			
+			"qsub": {
+				"name": "CollectInsertSizeMetrics",
+				"slots": 1,
+				"mem": "10G"
+			},
+	
+			"params": {
+				"ASSUME_SORTED=": "true",
+				"INPUT=": "$bam",
+				"OUTPUT=": "insertSizeMetrics.txt",
+				"REFERENCE_SEQUENCE=": "$reference",
+				"METRIC_ACCUMULATION_LEVEL=": "ALL_READS",
+				"HISTOGRAM_FILE=": "insertSizeHist.pdf"
+			}
+		}
+	}
+}
