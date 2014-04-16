@@ -8,10 +8,10 @@ SUMMARY:
 CLINQC performs multiple QC analyses for data in FASTQ, BAM, and VCF format. Analyses are run in parallel, apart from specified dependencies, on a cluster.
 Jobs are executed and monitored by Simple Job Manager (SJM; see
 https://github.com/StanfordBioinformatics/SJM/blob/master/doc/MANUAL.txt). The
-input into the CLINQC package is a configuration file in JASON format that
-abides by the JSON schema packaged within the tool. The main program in the
+input to the CLINQC package is a configuration file in JASON format, which
+must abide by the JSON schema packaged within the tool. The main program in the
 package is clinicalQc.py, which loads the schema and conf file, validates the
-conf file against the schema, and builds an SJM file, which can subsequently
+conf file against the schema, and builds the SJM file, which can subsequently
 be launched with the sjm command.
 
 
@@ -22,10 +22,11 @@ user-generated conf file. The schema allows in the conf file for
 1) Comments - Any key prefixed with a "#" will be ignored.
 
 2) Analyses - Multiple analyses can be defined within the top-level "analyses"
-object. Dependencies can also be specified. Each analysis object may contain a
-"params" object and a "qsub" object.  The params object lays out the analysis
-arguments and values; whereas the qsub object gives the job arguments and
-values for running the analysis on the cluster.
+object.  An analysis is defined as an executable that an have command-line options and
+arguments. Dependencies can also be specified. Each analysis object may contain a
+"params" object, an "args" object, and a "qsub" object.  The params object
+lays out the analysis parameters/options, while the args object contains an array of all the non-option arguments of the analysis, 
+whereas the qsub object gives the Grid Engine job arguments and values for running the analysis on the cluster.
 
 2) Resources - A top-level 'resources' object.  This is where you may 
 define common keys that can appear in multiple analyses. A reference can be

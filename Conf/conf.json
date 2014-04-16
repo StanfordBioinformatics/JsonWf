@@ -9,7 +9,6 @@
 		"PICARD": "/srv/gs1/software/picard-tools/1.111",
 		"ACMG_Genes": "/srv/gsfs0/projects/gbsc/Clinical_Service/dbases/ACMG/ACMG_genes.bed",
 		"rModule": "r",
-		"#gatkModule": "gatk/3.0",
 		"javaModule": "java/latest"
 	},
 

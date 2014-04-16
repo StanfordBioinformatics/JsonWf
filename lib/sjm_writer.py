@@ -158,8 +158,9 @@ class Job:
 		fout.write(self.tab + "name " + self.getName() + "\n")
 		fout.write(self.tab + "cmd " + self.getCmd() + "\n")
 		modules = self.getModules()
-		for mod in modules:
-			fout.write(self.tab + "module " +  mod + "\n")
+		if modules:
+			for mod in modules:
+				fout.write(self.tab + "module " +  mod + "\n")
 		mem = self.getMem()
 		fout.write(self.tab + "memory " + mem + "\n")
 		slots = self.getSlots()
