@@ -2,8 +2,8 @@
 
 	"resources": {
 		"reference": "/srv/gs1/projects/scg/Resources/GATK/hg19/ucsc.hg19.fasta",
-		"vcf": "/home/nathankw/BAM/chrM.gatk.vcf",
-		"bam": "/home/nathankw/BAM/chrM.recal.bam",
+		"vcf": "/home/nathankw/BAM/chr19.gatk.vcf.hc.vcf",
+		"bam": "/home/nathankw/BAM/chr19.recal.bam",
 		"dbsnp": "/srv/gs1/projects/scg/Resources/GATK/hg19-3.0/dbsnp_138.hg19.vcf",
 		"GATK": "/srv/gs1/software/gatk/gatk-3.0/GenomeAnalysisTK-3.0-0/",
 		"PICARD": "/srv/gs1/software/picard-tools/1.111",
@@ -13,7 +13,6 @@
 	},
 
 	"qsub": {
-		"directory": "/srv/gs1/software/gbsc/clinqc/1.0/TEST/nathankw",
 		"-M": "nathankw@stanford.edu",
 		"-m": "ba",
 		"-A": "clinical-services",
@@ -25,7 +24,7 @@
 		"fastqc": {
 			"enable": 0,
 			"modules": ["fastqc/0.10.1"],
-			"inputFormat": "fastq",
+			"inputFormat": "bam",
 			"inputArg": "null",
 
 			"qsub": {
@@ -36,15 +35,16 @@
 		
 			"params": {
 				"--threads": 5,
-				"--outdir": "$directory"
+				"--outdir": "$outdir"
 			},
 		
 			"args": {
-				"fastq": []
+				"fastq": ["$bam"]
+			}
 		},
 
 		"DepthOfCoverage": {
-			"enable": 1,
+			"enable": 0,
 			"modules": ["$javaModule"],
 			"jar": "$GATK/GenomeAnalysisTK.jar",
 			"javavm": "-Xmx5G",
@@ -68,7 +68,7 @@
 		},
 
 		"Concordance": {
-			"enable": 1,
+			"enable": 0,
 			"modules": ["$javaModule"],
 			"jar": "$GATK/GenomeAnalysisTK.jar",
 			"javavm": "-Xmx2G",
@@ -95,7 +95,7 @@
 		},
 
 		"Discordance": {
-			"enable": 1,
+			"enable": 0,
 			"modules": ["$javaModule"],
 			"jar": "$GATK/GenomeAnalysisTK.jar",
 			"javavm": "-Xmx2G",
@@ -122,7 +122,7 @@
 		},
 
 		"VariantEval": {
-			"enable": 1,
+			"enable": 0,
 			"modules": ["$javaModule"],
 			"jar": "$GATK/GenomeAnalysisTK.jar",
 			"javavm": "-Xmx2G",
@@ -145,12 +145,36 @@
 				"-noEV": "",
 				"-EV CountVariants -EV TiTvVariantEvaluator": "",
 				"-noST": "",
-				"-ST": "VariantType"
+				"-ST": "VariantType",
+				"--dbsnp": "$dbsnp"
 			}
 		},
 
-		"CollectAlignmentSummaryMetrics": {
+		"GenotypeConcordance": {
 			"enable": 1,
+			"modules": ["$javaModule"],
+			"jar": "$GATK/GenomeAnalysisTK.jar",
+			"javavm": "-Xmx2G",
+			"inputFormat": "vcf",
+
+			"qsub": {
+				"name": "GenotypeConcordance",
+				"slots": 1,
+				"mem": "6G"
+			},
+
+			"params": {
+				"-T": "GenotypeConcordance",
+				"-R": "$reference",
+				"--eval:set1,vcf": "$vcf",
+				"-o": "genotypeConcordance.txt",
+				"--comp": "$dbsnp"
+			}
+		},
+
+
+		"CollectAlignmentSummaryMetrics": {
+			"enable": 0,
 			"modules": ["$javaModule"],
 			"jar": "$PICARD/CollectAlignmentSummaryMetrics.jar",
 			"javavm": "-Xmx4G",
@@ -172,7 +196,7 @@
 		},
 
 		"CollectGcBiasMetrics": {
-			"enable": 1,
+			"enable": 0,
 			"modules": ["$javaModule","$rModule"],
 			"jar": "$PICARD/CollectGcBiasMetrics.jar",
 			"javavm": "-Xmx4G",
@@ -190,12 +214,12 @@
 				"OUTPUT=": "gcBiasMetrics.txt",
 				"REFERENCE_SEQUENCE=": "$reference",
 				"SUMMARY_OUTPUT=": "gcBiasMetrics_summary.txt",
-				"CHART_OUTPUT=": "gcBiasMetrics_chart.txt"
+				"CHART_OUTPUT=": "gcBiasMetrics_chart.pdf"
 			}
 		},
 
 		"CollectInsertSizeMetrics": {
-			"enable": 1,
+			"enable": 0,
 			"modules": ["$javaModule","$rModule"],
 			"jar": "$PICARD/CollectInsertSizeMetrics.jar",
 			"javavm": "-Xmx2G",
@@ -214,6 +238,55 @@
 				"REFERENCE_SEQUENCE=": "$reference",
 				"METRIC_ACCUMULATION_LEVEL=": "ALL_READS",
 				"HISTOGRAM_FILE=": "insertSizeHist.pdf"
+			}
+		},
+
+		"MeanQualityByCycle": {
+			"enable": 0,
+			"modules": ["$javaModule","$rModule"],
+			"jar": "$PICARD/MeanQualityByCycle.jar",
+			"javavm": "-Xmx2G",
+			"inputFormat": "bam",
+			
+			"qsub": {
+				"name": "MeanQualityByCycle",
+				"slots": 1,
+				"mem": "5G"
+			},
+	
+			"params": {
+				"ASSUME_SORTED=": "true",
+				"INPUT=": "$bam",
+				"OUTPUT=": "meanQualitybyCycle.txt",
+				"REFERENCE_SEQUENCE=": "$reference",
+				"ALIGNED_READS_ONLY=": "true",
+				"PF_READS_ONLY=": "true",
+				"CHART_OUTPUT=": "meanQualityByCycle.pdf"
+			}
+		},
+
+
+		"QualityScoreDistribution": {
+			"enable": 0,
+			"modules": ["$javaModule","$rModule"],
+			"jar": "$PICARD/QualityScoreDistribution.jar",
+			"javavm": "-Xmx2G",
+			"inputFormat": "bam",
+			
+			"qsub": {
+				"name": "QualityScoreDistribution",
+				"slots": 1,
+				"mem": "5G"
+			},
+	
+			"params": {
+				"ASSUME_SORTED=": "true",
+				"INPUT=": "$bam",
+				"OUTPUT=": "qualityScoreDistribution.txt",
+				"REFERENCE_SEQUENCE=": "$reference",
+				"ALIGNED_READS_ONLY=": "true",
+				"PF_READS_ONLY=": "true",
+				"CHART_OUTPUT=": "qualityScoreDistribution.pdf"
 			}
 		}
 	}

@@ -134,11 +134,7 @@ def makeCmd(progName,prog):
 	job.setSjmFile(sjmfile)
 	job.setCmd(cmd)
 
-	try:
-		job.setCwd(qsub['directory'])
-	except KeyError:
-		#poperty not required
-		pass
+	job.setCwd(outdir)
 
 	mem = "mem"
 	try:
@@ -187,14 +183,8 @@ def makeCmd(progName,prog):
 		#property not required
 		pass
 
-	try:
-		job.setCwd(qsub['directory'])
-	except KeyError:
-		#property not required
-		pass
 
-
-	qsub_other = ""
+	qsub_other = "-o {logdir} -e {logdir}".format(logdir=logdir) + " "
 	for arg in qsub:
 		if arg not in coreQsubArgs:
 			qsub_other += arg + " " + qsub[arg] + "  "
@@ -215,12 +205,13 @@ def makeCmd(progName,prog):
 
 
 
-coreQsubArgs = ["time","mem","slots","pe","host","queue", "project","directory","name"]
+coreQsubArgs = ["time","mem","slots","pe","host","queue", "project","outdir","-e","-o","cwd","name"]
 
 description = "Given a JSON configuration file that abides by the packaged schema.json file, this program will validate the conf file, then build an SJM file. Variable substitution is also supported, whereby any value in the conf file that begins with a '$' may be replaced by a global resource that is specified either on the command-line (CL) as an argument, or in the conf file itself. In the conf file, resources include the global resource and qsub objects.  CL-set resources override conf file resources."
 
 parser = ArgumentParser(description=description)
-parser.add_argument('-s','--schema',default="/srv/gs1/software/gbsc/clinqc/1.0/schema.json", help="The JSON schema that will be used to validate the JSON configuration file. Default is %(default)s.")
+parser.add_argument('--schema',default="/srv/gs1/software/gbsc/kwality/1.0/schema.json", help="The JSON schema that will be used to validate the JSON configuration file. Default is %(default)s.")
+parser.add_argument('--outdir',required=True,help="The directory to output all result files. Will be created if it does't exist already.")
 parser.add_argument('-c','--conf-file',required=True,help="Configuration file in JSON format.")
 parser.add_argument('resources',nargs="*",help="One or more space-delimited key=value resources that can override or append to the keys of the resoruce object in the JSON conf file.")
 parser.add_argument('-o','--outfile',required=True,help="Output SJM file. Appends to it by default.")
@@ -228,6 +219,13 @@ parser.add_argument('-v','--verbose',help="Print extra details to stdout.")
 parser.add_argument('--run',action="store_true",help="Don't just generate the sjm file, run it too.")
 
 args = parser.parse_args()
+outdir = args.outdir
+if not os.path.exists(outdir):
+	os.mkdir(outdir)
+logdir = os.path.join(outdir,"JobStatus")
+if not os.path.exists(logdir):
+	os.mkdir(logdir)
+
 
 run = args.run
 sjmfile = args.outfile
