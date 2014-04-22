@@ -6,26 +6,19 @@ variant inputs
 
 
 SUMMARY: 
-Kwality performs multiple QC analyses for data in FASTQ, BAM, and VCF format. Analyses run in parallel, apart from specified dependencies, on a cluster.
-Cluster jobs are executed and monitored by Simple Job Manager (SJM; see
-https://github.com/StanfordBioinformatics/SJM/blob/master/doc/MANUAL.txt),
-which is aware of job dependencies and keeps track of each job's status. The
-input to the Kwality package is a configuration file in JASON format, which
-must abide by the JSON schema packaged within the tool. The main program in the
-package is clinicalQc.py, which loads the schema and conf file, validates the
-conf file against the schema, and builds the SJM file, which can subsequently
-be launched with the sjm command.
+Kwality performs multiple QC analyses for data in FASTQ, BAM, and VCF format. Analyses run in parallel, apart from specified dependencies, on a cluster.  The tool is executed with the script kwality.py, which requires a configuration (conf) file in JSON format, a directory in which to output the resulting data files, and a job file name.  The conf file must abide by the built-in schema, and kwality.py ensures this with validation. The job file will be written in Simple Job Manager (SJM) format; see https://github.com/StanfordBioinformatics/SJM/blob/master/doc/MANUAL.txt for more details.  This format specifies how jobs are to run on a cluster (i.e. Open Grid Engine), such as as what resources to allocate per job and job dependencies.  The SJM file can be luanched with the sjm command.  SJM is not included in the kwality bundle.
 
+Job stdout and stderr streams will be written to individual files within a JobStatus directory. This directory is a sub-directory of the output directory given to kwality.py, and is automatically created.
 
 JSON SCHEMA:
 The packaged schema schema.json defines the rules and structure of the
-user-generated conf file. The schema allows for
+user-generated conf file. Take a look at the template conf.json config file as a guide while you read about it's schema below.  Also, feel free to browse the schema file directly.
 
-1) Comments - Any key prefixed with a "#" will be ignored.
+1) Comments - Any key prefixed with a "#" will be ignored.  The "#" must be within the quotation marks of the key.
 
 2) Analyses - Multiple analyses can be defined within the top-level "analyses"
 object.  An analysis is defined as an executable that can have command-line (CL) options and
-arguments. Dependencies can also be specified. Each analysis object may contain a
+arguments. Dependencies on other analyses can be specified. Each analysis object may contain a
 "params" object, an "args" object, and a "qsub" object.  The params object
 lays out the analysis parameters/options, while the args object contains an array of all the non-option arguments of the analysis, 
 whereas the qsub object gives the Grid Engine job arguments and values for running the analysis on the cluster.
