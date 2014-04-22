@@ -135,6 +135,7 @@ def makeCmd(progName,prog):
 	job.setCmd(cmd)
 
 	job.setCwd(outdir)
+	job.setJobLogDir(logdir)
 
 	mem = "mem"
 	try:
@@ -190,7 +191,7 @@ def makeCmd(progName,prog):
 			qsub_other += arg + " " + qsub[arg] + "  "
 
 	if qsub_other:
-		job.setOtherOpts(qsub_other)
+		job.addAdditionalOpts(qsub_other)
 
 
 	modules = False
@@ -207,28 +208,29 @@ def makeCmd(progName,prog):
 
 coreQsubArgs = ["time","mem","slots","pe","host","queue", "project","outdir","-e","-o","cwd","name"]
 
-description = "Given a JSON configuration file that abides by the packaged schema.json file, this program will validate the conf file, then build an SJM file. Variable substitution is also supported, whereby any value in the conf file that begins with a '$' may be replaced by a global resource that is specified either on the command-line (CL) as an argument, or in the conf file itself. In the conf file, resources include the global resource and qsub objects.  CL-set resources override conf file resources."
+description = "Given a JSON configuration file that abides by the packaged schema.json file, this program will validate the conf file, then build an SJM file. Variable substitution is also supported, whereby any value in the conf file that begins with a '$' may be replaced by a global resource that is specified either on the command-line (CL) as an argument, or in the conf file itself. In the conf file, resources include the global resource and qsub objects.  CL set resources override conf file resources."
 
 parser = ArgumentParser(description=description)
 parser.add_argument('--schema',default="/srv/gs1/software/gbsc/kwality/1.0/schema.json", help="The JSON schema that will be used to validate the JSON configuration file. Default is %(default)s.")
-parser.add_argument('--outdir',required=True,help="The directory to output all result files. Will be created if it does't exist already.")
+parser.add_argument('--outdir',required=True,help="The directory to output all result files. Can be a relative or absoulte direcotry path. Will be created if it does't exist already.")
 parser.add_argument('-c','--conf-file',required=True,help="Configuration file in JSON format.")
 parser.add_argument('resources',nargs="*",help="One or more space-delimited key=value resources that can override or append to the keys of the resoruce object in the JSON conf file.")
-parser.add_argument('-o','--outfile',required=True,help="Output SJM file. Appends to it by default.")
+parser.add_argument('-s','--sjmfile',required=True,help="Output SJM file. Appends to it by default.")
 parser.add_argument('-v','--verbose',help="Print extra details to stdout.")
 parser.add_argument('--run',action="store_true",help="Don't just generate the sjm file, run it too.")
 
 args = parser.parse_args()
-outdir = args.outdir
+outdir = os.path.abspath(args.outdir)
 if not os.path.exists(outdir):
 	os.mkdir(outdir)
+#outdir will be added to the globalQsub dict below.
 logdir = os.path.join(outdir,"JobStatus")
 if not os.path.exists(logdir):
 	os.mkdir(logdir)
 
 
 run = args.run
-sjmfile = args.outfile
+sjmfile = args.sjmfile
 if os.path.exists(sjmfile):
 	os.remove(sjmfile)
 
@@ -260,8 +262,7 @@ except KeyError:
 # only if the key doens't exist already.
 for i  in jsonResources:
 	if i not in resdico:
-		i = str(i)
-		resdico[i] = jsonResources[i]
+		resdico[i] = jsonResources[str(i)]
 	
 
 globalQsub = False
@@ -270,6 +271,7 @@ try:
 except KeyError:
 	pass
 
+globalQsub['outdir'] = outdir
 globalQsub_intersect = set(resdico).intersection(globalQsub)	
 if globalQsub_intersect:
 	for res in globalQsub_intersect:

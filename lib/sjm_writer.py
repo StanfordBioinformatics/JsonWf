@@ -28,15 +28,21 @@ class Job:
 		self.time = False
 		self.slots = False
 		self.cwd = False
+		self.jobLogDir = False
+		self.additionalOpts = ""
 
 
-	def setOtherOpts(self,opts):
-		self.otherOpts = opts
+	def setAdditionalOpts(self,opts):
+		"""
+		Function : 
+		Args     : opts - sting of additional qsub options that aren't supported by existing specific class methods"
+		"""
+		self.additionalOpts = opts
 
-	def addOtherOpt(self,opt):
-		others = self.getOtherOpts()
-		others += " " + opt
-		self.setOtherOpts(others)
+	def addAdditionalOpts(self,opt):
+		ads = self.getAdditionalOpts()
+		ads += " " + opt
+		self.setAdditionalOpts(ads)
 
 	def setResource(self,resource,val):
 		if resource == "slots":
@@ -60,7 +66,16 @@ class Job:
 
 	def setCwd(self,cwd):
 		self.cwd = cwd
-	
+
+	def setJobLogDir(self,jobLogDir):
+		"""
+		Function : Sets the job log directory to which GE stdout and stderr files will be written. This calls setAdditionalOpt().
+		Args     : jobLogDir - str. specifying the job log directory 
+		"""
+		self.jobLogDir = jobLogDir
+		newOpt = "-e {0} -o {0}".format(jobLogDir)
+		self.addAdditionalOpts(newOpt)
+
 	def setName(self,name):
 		"""
 		Set job name
@@ -100,8 +115,8 @@ class Job:
 	def setOrder(self,order):
 		self.order = order
 
-	def getOtherOpts(self):
-		return self.otherOpts
+	def getAdditionalOpts(self):
+		return self.additionalOpts
 
 	def getHost(self):
 		return self.host
@@ -114,6 +129,9 @@ class Job:
 
 	def getCwd(self):
 		return self.cwd
+
+	def getJobLogDir(self):
+		return self.jobLogDir
 
 	def getName(self):
 		return self.name
@@ -186,9 +204,9 @@ class Job:
 		if cwd:
 			fout.write(self.tab + "directory " + cwd + "\n") 
 
-		otherOpts = self.getOtherOpts()
-		if otherOpts:
-			fout.write(self.tab + "sched_options " + otherOpts + "\n")
+		additionalOpts = self.getAdditionalOpts()
+		if additionalOpts:
+			fout.write(self.tab + "sched_options " + additionalOpts + "\n")
 
 		fout.write("job_end\n\n")
 #		for dependency in self.getOrders():

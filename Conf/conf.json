@@ -2,8 +2,6 @@
 
 	"resources": {
 		"reference": "/srv/gs1/projects/scg/Resources/GATK/hg19/ucsc.hg19.fasta",
-		"vcf": "/home/nathankw/BAM/chr19.gatk.vcf.hc.vcf",
-		"bam": "/home/nathankw/BAM/chr19.recal.bam",
 		"dbsnp": "/srv/gs1/projects/scg/Resources/GATK/hg19-3.0/dbsnp_138.hg19.vcf",
 		"GATK": "/srv/gs1/software/gatk/gatk-3.0/GenomeAnalysisTK-3.0-0/",
 		"PICARD": "/srv/gs1/software/picard-tools/1.111",
@@ -22,7 +20,7 @@
 	"analyses": {
 
 		"fastqc": {
-			"enable": 0,
+			"enable": 1,
 			"modules": ["fastqc/0.10.1"],
 			"inputFormat": "bam",
 			"inputArg": "null",
@@ -44,7 +42,7 @@
 		},
 
 		"DepthOfCoverage": {
-			"enable": 0,
+			"enable": 1,
 			"modules": ["$javaModule"],
 			"jar": "$GATK/GenomeAnalysisTK.jar",
 			"javavm": "-Xmx5G",
@@ -59,7 +57,6 @@
 
 			"params": {
 				"-T": "DepthOfCoverage",
-				"-L": "chr20:59998-248123",
 		    "-L": "$ACMG_Genes",
 				"-R": "$reference",
 				"-I": "$bam",
@@ -68,7 +65,7 @@
 		},
 
 		"Concordance": {
-			"enable": 0,
+			"enable": 1,
 			"modules": ["$javaModule"],
 			"jar": "$GATK/GenomeAnalysisTK.jar",
 			"javavm": "-Xmx2G",
@@ -84,7 +81,6 @@
 
 			"params": {
 				"-T": "SelectVariants",
-				"-L": "chr20:61795-62965366",
 		    "-L": "$ACMG_Genes",
 				"-nt": 10,
 				"--variant": "$vcf",
@@ -95,7 +91,7 @@
 		},
 
 		"Discordance": {
-			"enable": 0,
+			"enable": 1,
 			"modules": ["$javaModule"],
 			"jar": "$GATK/GenomeAnalysisTK.jar",
 			"javavm": "-Xmx2G",
@@ -111,7 +107,6 @@
 
 			"params": {
 				"-T": "SelectVariants",
-				"-L": "chr20:61795-62965366",
 		    "-L": "$ACMG_Genes",
 				"-nt" : 8,
 				"--variant": "$vcf",
@@ -122,7 +117,7 @@
 		},
 
 		"VariantEval": {
-			"enable": 0,
+			"enable": 1,
 			"modules": ["$javaModule"],
 			"jar": "$GATK/GenomeAnalysisTK.jar",
 			"javavm": "-Xmx2G",
@@ -137,7 +132,6 @@
 			"params": {
 				"-nt": 8,
 				"-T": "VariantEval",
-				"-L": "chr20:61795-62965366",
 		    "-L": "$ACMG_Genes",
 				"-R": "$reference",
 				"--eval:set1,vcf": "$vcf",
