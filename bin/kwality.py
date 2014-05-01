@@ -53,6 +53,16 @@ def expandVars(prog):
 
 
 def checkResource(txt):
+	"""
+	Function : Given a string, looks for variables with the syntax ${var}, where var is the variable name.
+						 Finds each such variable in the string and checks to see if the variable name exists in the global
+						 resource dict called resdico. If it doesn't, a ValueError is raised. If all found variables exist 
+						 in resdico, the a variable expansion is performed through the shell on the input string. This relies 
+						 on all resources in resdico having been added to the environment (and shell environment) with a call 
+						 to os.environ, for example.  
+	Args     : txt - str.
+	Returns  : str. txt that has undergone variable expansion via the shell.
+	"""
 	groupiter = reg.finditer(txt)	
 	for i in groupiter:
 		varName = i.groupdict()['var']	
@@ -61,8 +71,10 @@ def checkResource(txt):
 		except KeyError:
 			raise ValueError("In configuration file, varible {varName} does not contain a resource.".format(varName=varName))
 
-		txt = re.sub(r'\${{{varName}}}'.format(varName=varName),replace,txt)
-		print("Updated {varName} to {replace}".format(varName=varName,replace=replace))
+		##Hold off on update below, let all updates happen simultaneously though shell expansion with the call the subprocess below
+		#txt = re.sub(r'\${{{varName}}}'.format(varName=varName),replace,txt) 
+		print("Updating {varName} to {replace}".format(varName=varName,replace=replace))
+	txt = subprocess.Popen('echo -n "{txt}"'.format(txt=txt),shell=True,stdout=subprocess.PIPE).communicate()[0]
 	return txt
         
 
@@ -268,6 +280,10 @@ if globalQsub_intersect:
 	raise Exception("Exiting due to resource key clashes.")
 else:
 	resdico.update(globalQsub)
+
+#os.environ internally calls os.putenv, which will also set the environment variables at the outter shell level.
+for var in resdico:
+	os.environ[var] = resdico[var]
 
 for programName in jconf['analyses']:
 #	print (jconf['analyses'][programName])
