@@ -39,18 +39,14 @@ def expandVars(prog):
 		valType = type(val)
 		if valType == str or valType == unicode:
 			resourceValue = checkResource(val)
-			if resourceValue:
-				prog[key] = resourceValue
-				print("Updating {val} to {resourceValue}".format(val=val,resourceValue=resourceValue))
+			prog[key] = resourceValue
    
 		elif valType == list or valType == tuple:
 			count = -1
 			for part in val:
 				count += 1
 				resourceValue= checkResource(part)
-				if resourceValue:
-					prog[key][count] = resourceValue
-					print("Updating {val} to {resourceValue}".format(val=prog[key][count],resourceValue=resourceValue))
+				prog[key][count] = resourceValue
 					
 		elif valType == dict:
 			expandVars(val)		
@@ -63,9 +59,10 @@ def checkResource(txt):
 		try: 
 			replace = resdico[varName]
 		except KeyError:
-			raise ValueError("In configuration file, varible {varName} does not contain a resource.".format(varName=varName)
+			raise ValueError("In configuration file, varible {varName} does not contain a resource.".format(varName=varName))
 
 		txt = re.sub(r'\${{{varName}}}'.format(varName=varName),replace,txt)
+		print("Updated {varName} to {replace}".format(varName=varName,replace=replace))
 	return txt
         
 

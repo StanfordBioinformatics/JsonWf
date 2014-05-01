@@ -33,16 +33,16 @@
 		
 			"params": {
 				"--threads": 5,
-				"--outdir": "$outdir"
+				"--outdir": "${outdir}"
 			},
 		
-			"args": ["$bam"]
+			"args": ["${bam}"]
 		},
 
 		"DepthOfCoverage": {
 			"enable": 1,
-			"modules": ["$javaModule"],
-			"jar": "$GATK/GenomeAnalysisTK.jar",
+			"modules": ["${javaModule}"],
+			"jar": "${GATK}/GenomeAnalysisTK.jar",
 			"javavm": "-Xmx5G",
 			"inputFormat": "bam",
 			"inputArg": "-I",
@@ -55,17 +55,17 @@
 
 			"params": {
 				"-T": "DepthOfCoverage",
-		    "-L": "$ACMG_Genes",
-				"-R": "$reference",
-				"-I": "$bam",
+		    "-L": "${ACMG_Genes}",
+				"-R": "${reference}",
+				"-I": "${bam}",
 				"-o": "coverage_hist.txt"
 			}
 		},
 
 		"Concordance": {
 			"enable": 1,
-			"modules": ["$javaModule"],
-			"jar": "$GATK/GenomeAnalysisTK.jar",
+			"modules": ["${javaModule}"],
+			"jar": "${GATK}/GenomeAnalysisTK.jar",
 			"javavm": "-Xmx2G",
 			"inputFormat": "vcf",
 			"inputArg": "--variant",
@@ -79,19 +79,19 @@
 
 			"params": {
 				"-T": "SelectVariants",
-		    "-L": "$ACMG_Genes",
+		    "-L": "${ACMG_Genes}",
 				"-nt": 10,
-				"--variant": "$vcf",
-				"--concordance": "$dbsnp",
-				"-R": "$reference",
+				"--variant": "${vcf}",
+				"--concordance": "${dbsnp}",
+				"-R": "${reference}",
 				"-o": "concordance.vcf"
 			}
 		},
 
 		"Discordance": {
 			"enable": 1,
-			"modules": ["$javaModule"],
-			"jar": "$GATK/GenomeAnalysisTK.jar",
+			"modules": ["${javaModule}"],
+			"jar": "${GATK}/GenomeAnalysisTK.jar",
 			"javavm": "-Xmx2G",
 			"inputFormat": "vcf",
 			"inputArg": "--variant",
@@ -105,19 +105,19 @@
 
 			"params": {
 				"-T": "SelectVariants",
-		    "-L": "$ACMG_Genes",
+		    "-L": "${ACMG_Genes}",
 				"-nt" : 8,
-				"--variant": "$vcf",
-				"--discordance": "$dbsnp",
-				"-R": "$reference",
+				"--variant": "${vcf}",
+				"--discordance": "${dbsnp}",
+				"-R": "${reference}",
 				"-o": "discordance.vcf"
 			}
 		},
 
 		"VariantEval": {
 			"enable": 1,
-			"modules": ["$javaModule"],
-			"jar": "$GATK/GenomeAnalysisTK.jar",
+			"modules": ["${javaModule}"],
+			"jar": "${GATK}/GenomeAnalysisTK.jar",
 			"javavm": "-Xmx2G",
 			"inputFormat": "vcf",
 
@@ -130,22 +130,22 @@
 			"params": {
 				"-nt": 8,
 				"-T": "VariantEval",
-		    "-L": "$ACMG_Genes",
-				"-R": "$reference",
-				"--eval:set1,vcf": "$vcf",
+		    "-L": "${ACMG_Genes}",
+				"-R": "${reference}",
+				"--eval:set1,vcf": "${vcf}",
 				"-o": "variantEval_metrics.txt",
 				"-noEV": "",
 				"-EV CountVariants -EV TiTvVariantEvaluator": "",
 				"-noST": "",
 				"-ST": "VariantType",
-				"--dbsnp": "$dbsnp"
+				"--dbsnp": "${dbsnp}"
 			}
 		},
 
 		"GenotypeConcordance": {
 			"enable": 1,
-			"modules": ["$javaModule"],
-			"jar": "$GATK/GenomeAnalysisTK.jar",
+			"modules": ["${javaModule}"],
+			"jar": "${GATK}/GenomeAnalysisTK.jar",
 			"javavm": "-Xmx2G",
 			"inputFormat": "vcf",
 
@@ -157,18 +157,18 @@
 
 			"params": {
 				"-T": "GenotypeConcordance",
-				"-R": "$reference",
-				"--eval:set1,vcf": "$vcf",
+				"-R": "${reference}",
+				"--eval:set1,vcf": "${vcf}",
 				"-o": "genotypeConcordance.txt",
-				"--comp": "$dbsnp"
+				"--comp": "${dbsnp}"
 			}
 		},
 
 
 		"CollectAlignmentSummaryMetrics": {
 			"enable": 0,
-			"modules": ["$javaModule"],
-			"jar": "$PICARD/CollectAlignmentSummaryMetrics.jar",
+			"modules": ["${javaModule}"],
+			"jar": "${PICARD}/CollectAlignmentSummaryMetrics.jar",
 			"javavm": "-Xmx4G",
 			"inputFormat": "bam",
 			
@@ -180,17 +180,17 @@
 		
 			"params": {
 				"ASSUME_SORTED=": "true",
-				"INPUT=": "$bam",
+				"INPUT=": "${bam}",
 				"OUTPUT=": "alnSummaryMetrics.txt",
-				"REFERENCE_SEQUENCE=": "$reference",
+				"REFERENCE_SEQUENCE=": "${reference}",
 				"METRIC_ACCUMULATION_LEVEL=": "ALL_READS"
 			}
 		},
 
 		"CollectGcBiasMetrics": {
 			"enable": 0,
-			"modules": ["$javaModule","$rModule"],
-			"jar": "$PICARD/CollectGcBiasMetrics.jar",
+			"modules": ["${javaModule}","${rModule}"],
+			"jar": "${PICARD}/CollectGcBiasMetrics.jar",
 			"javavm": "-Xmx4G",
 			"inputFormat": "bam",
 			
@@ -202,9 +202,9 @@
 		
 			"params": {
 				"ASSUME_SORTED=": "true",
-				"INPUT=": "$bam",
+				"INPUT=": "${bam}",
 				"OUTPUT=": "gcBiasMetrics.txt",
-				"REFERENCE_SEQUENCE=": "$reference",
+				"REFERENCE_SEQUENCE=": "${reference}",
 				"SUMMARY_OUTPUT=": "gcBiasMetrics_summary.txt",
 				"CHART_OUTPUT=": "gcBiasMetrics_chart.pdf"
 			}
@@ -212,8 +212,8 @@
 
 		"CollectInsertSizeMetrics": {
 			"enable": 0,
-			"modules": ["$javaModule","$rModule"],
-			"jar": "$PICARD/CollectInsertSizeMetrics.jar",
+			"modules": ["${javaModule}","${rModule}"],
+			"jar": "${PICARD}/CollectInsertSizeMetrics.jar",
 			"javavm": "-Xmx2G",
 			"inputFormat": "bam",
 			
@@ -225,9 +225,9 @@
 	
 			"params": {
 				"ASSUME_SORTED=": "true",
-				"INPUT=": "$bam",
+				"INPUT=": "${bam}",
 				"OUTPUT=": "insertSizeMetrics.txt",
-				"REFERENCE_SEQUENCE=": "$reference",
+				"REFERENCE_SEQUENCE=": "${reference}",
 				"METRIC_ACCUMULATION_LEVEL=": "ALL_READS",
 				"HISTOGRAM_FILE=": "insertSizeHist.pdf"
 			}
@@ -235,8 +235,8 @@
 
 		"MeanQualityByCycle": {
 			"enable": 0,
-			"modules": ["$javaModule","$rModule"],
-			"jar": "$PICARD/MeanQualityByCycle.jar",
+			"modules": ["${javaModule}","${rModule}"],
+			"jar": "${PICARD}/MeanQualityByCycle.jar",
 			"javavm": "-Xmx2G",
 			"inputFormat": "bam",
 			
@@ -248,9 +248,9 @@
 	
 			"params": {
 				"ASSUME_SORTED=": "true",
-				"INPUT=": "$bam",
+				"INPUT=": "${bam}",
 				"OUTPUT=": "meanQualitybyCycle.txt",
-				"REFERENCE_SEQUENCE=": "$reference",
+				"REFERENCE_SEQUENCE=": "${reference}",
 				"ALIGNED_READS_ONLY=": "true",
 				"PF_READS_ONLY=": "true",
 				"CHART_OUTPUT=": "meanQualityByCycle.pdf"
@@ -260,8 +260,8 @@
 
 		"QualityScoreDistribution": {
 			"enable": 0,
-			"modules": ["$javaModule","$rModule"],
-			"jar": "$PICARD/QualityScoreDistribution.jar",
+			"modules": ["${javaModule}","${rModule}"],
+			"jar": "${PICARD}/QualityScoreDistribution.jar",
 			"javavm": "-Xmx2G",
 			"inputFormat": "bam",
 			
@@ -273,9 +273,9 @@
 	
 			"params": {
 				"ASSUME_SORTED=": "true",
-				"INPUT=": "$bam",
+				"INPUT=": "${bam}",
 				"OUTPUT=": "qualityScoreDistribution.txt",
-				"REFERENCE_SEQUENCE=": "$reference",
+				"REFERENCE_SEQUENCE=": "${reference}",
 				"ALIGNED_READS_ONLY=": "true",
 				"PF_READS_ONLY=": "true",
 				"CHART_OUTPUT=": "qualityScoreDistribution.pdf"
