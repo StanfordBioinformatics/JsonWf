@@ -25,10 +25,10 @@ whereas the qsub object gives the Grid Engine job arguments and values for runni
 
 2) General Resources - A top-level 'resources' object.  This is where you may 
 define common keys that can appear in multiple analyses. A particular key in an analysis can reference a
-resource by setting its value to the resource name, prefixed by a "$" symbol;
-however, the reference must be at the beginning of the value. For example, if we have the reference 
-					"vcf": "sample1.vcf"
-then it is possible for all analyses to reference this vcf file.
+resource by setting its value to the resource name, prefixed with "${" and suffixed with "}", which is a variable.  For example, the config file could
+have this key and value pair:   "name": "${name}"   and all resources will then be checked for one by the name of 'name'.  Furthermore, a variable can appear 
+within other text.  For example:
+	"path": "/data/dev/${project}/all"
 
 3) QSUB Resources - A top-level 'qsub' object that contains qsub options to
 use across all analyses. This is usefule for setting common options only once,

@@ -7,7 +7,10 @@ import sjm_writer
 from argparse import ArgumentParser
 import jsonschema
 import subprocess
+import re
 
+
+reg = re.compile(r'\${(?P<var>[\d\w]+)}')
 
 def rmComments(dico):
 	"""
@@ -53,28 +56,17 @@ def expandVars(prog):
 			expandVars(val)		
 
 
-def checkResource(key):
-	
-	if not key.startswith("$"):
-		return False
-	key = key.lstrip("$")
-	path = key.split("/",1) #could be an environment variable at the begining of a path 
-	if len(path) == 2:
-		key = path[0]
-		path = path[1]
-	else:
-		path = False
+def checkResource(txt):
+	groupiter = reg.finditer(txt)	
+	for i in groupiter:
+		varName = i.groupdict()['var']	
+		try: 
+			replace = resdico[varName]
+		except KeyError:
+			raise ValueError("In configuration file, varible {varName} does not contain a resource.".format(varName=varName)
 
-	val = False
-	try: 
-		val = resdico[key]
-	except KeyError:
-		raise ValueError("In configuration file, varible {key} does not contain a resource.".format(key=key))
-
-	if path:
-		val = os.path.join(val,path)
-
-	return val
+		txt = re.sub(r'\${{{varName}}}'.format(varName=varName),replace,txt)
+	return txt
         
 
 
