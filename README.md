@@ -13,6 +13,7 @@ Job stdout and stderr streams will be written to individual files within a JobSt
 JSON SCHEMA:
 The packaged schema schema.json defines the rules and structure of the
 user-generated conf file. Take a look at the template conf.json config file as a guide while you read about it's schema below.  Also, feel free to browse the schema file directly.
+The schema allows for:
 
 1) Comments - Any key prefixed with a "#" will be ignored.  The "#" must be within the quotation marks of the key.
 
@@ -29,11 +30,14 @@ resource by setting its value to the resource name, prefixed with "${" and suffi
 have this key and value pair:   "name": "${name}"   and all resources will then be checked for one by the name of 'name'.  Furthermore, a variable can appear 
 within other text.  For example:
 	"path": "/data/dev/${project}/all"
+Furthermore, all resources are added to the list of environment variables, and each JSON string value is evaluated through the shell. Therefore, BASH syntax of any sort is supported in the value and will be evaulated through the shell's 'echo' utility.
 
 3) QSUB Resources - A top-level 'qsub' object that contains qsub options to
 use across all analyses. This is usefule for setting common options only once,
 rather that repetitively for each analysis. A reference is made to a qsub
 resource in the same way as to a general resource.
+
+4) Limitid support JSON pointers see, as defined in rfc6901 (http://tools.ietf.org/html/rfc6901). Currently, only absolute JSON pointers to values within the same document are supported.
 
 
 In addition to the general resources specified in the conf file, resources may
