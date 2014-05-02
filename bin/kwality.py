@@ -11,6 +11,7 @@ import re
 
 
 reg = re.compile(r'\${(?P<var>[\d\w]+)}')
+numReg = re.compile(r'\d$')
 
 def rmComments(dico):
 	"""
@@ -38,6 +39,10 @@ def expandVars(prog):
 		val = prog[key]
 		valType = type(val)
 		if valType == str or valType == unicode:
+			if val.startswith("#"):
+				origVal = val
+				val = resolveJsonPointer(val)
+				print ("Resolved {origVal} to {val}".format(origVal=origVal,val=val))
 			resourceValue = checkResource(val)
 			prog[key] = resourceValue
    
@@ -45,12 +50,35 @@ def expandVars(prog):
 			count = -1
 			for part in val:
 				count += 1
+				if part.startswith("#"):
+					origPart = part
+					part = resolveJsonPointer(part)
+					print ("Resolved {origPart} to {part}".format(origPart=origPart,part=part))
 				resourceValue= checkResource(part)
 				prog[key][count] = resourceValue
 					
 		elif valType == dict:
 			expandVars(val)		
 
+def resolveJsonPointer(txt):
+	"""
+	Function :
+	Args     :
+	Returns  :
+	"""
+	txt = txt.lstrip("#")
+	num = None
+	if numReg.search(txt):
+		num = int(txt[-1])
+		txt = txt[:-2] #2, b/c 1 for # and 1 for /
+	txt = txt.split("/")[1:]
+	exCode = "jconf"
+	for key in txt:
+		exCode += "['{0}']".format(key)
+	if num:
+		exCode += "[{0}]".format(num)
+	print ("evalCode is {0}".format(exCode))
+	return eval(exCode)
 
 def checkResource(txt):
 	"""
@@ -81,10 +109,10 @@ def checkResource(txt):
 
 
 
-def makeCmd(progName,prog):	
+def makeCmd(programName,prog):	
 	"""
 	Function : String together a command and it's arguments from the input dictionary.
-	Args     : progName - str. Name of the program (i.e. the executable)
+	Args     : programName - str. Name of the program (i.e. the executable)
 						 prog - dict structured as an 'analyses' object in the json schema.
 	"""
 	cmd = ""
@@ -104,19 +132,25 @@ def makeCmd(progName,prog):
 	if jar:
 		cmd += "java " + javavm + " " + "-jar " + jar + " "
 	else:
-		cmd += progName + " "
+		cmd += prog['program'] + " "
 
-	progOptions = prog['params']
-	for arg in progOptions:
-		val = progOptions[arg] #val can be empty string if boolean option
-		val = str(val)
-		if val:
-			if arg.endswith("="):
-				cmd += arg + val + " "
+	progOptions = False
+	try:
+		progOptions = prog['params']
+	except KeyError:
+		pass
+		#property not required
+	if progOptions:
+		for arg in progOptions:
+			val = progOptions[arg] #val can be empty string if boolean option
+			val = str(val)
+			if val:
+				if arg.endswith("="):
+					cmd += arg + val + " "
+				else:
+					cmd += arg + " " + val + " "
 			else:
-				cmd += arg + " " + val + " "
-		else:
-			cmd += arg + " "
+				cmd += arg + " "
 
 	progArgs = False
 	try:
@@ -127,11 +161,18 @@ def makeCmd(progName,prog):
 		for arg in progArgs:
 			cmd += " " + arg + " "
 
+
+
 	qsub = prog['qsub']
-
-	jobname = qsub['name']
-
+	jobname = programName
 	job = sjm_writer.Job(jobname)
+
+	try:
+		job.setDependencies(prog['dependencies'])
+	except KeyError:
+		#property not required
+		pass
+
 	job.setSjmFile(sjmfile)
 	job.setCmd(cmd)
 
@@ -158,7 +199,6 @@ def makeCmd(progName,prog):
 	except KeyError:
 		#property not required
 		pass
-
 
 	try:
 		job.setPe(qsub['pe'])
@@ -283,7 +323,7 @@ else:
 
 #os.environ internally calls os.putenv, which will also set the environment variables at the outter shell level.
 for var in resdico:
-	os.environ[var] = resdico[var]
+	os.environ[var] = str(resdico[var])
 
 for programName in jconf['analyses']:
 #	print (jconf['analyses'][programName])

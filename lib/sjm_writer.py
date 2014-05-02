@@ -30,7 +30,7 @@ class Job:
 		self.cwd = False
 		self.jobLogDir = False
 		self.additionalOpts = ""
-
+		self.dependencies = []
 
 	def setAdditionalOpts(self,opts):
 		"""
@@ -112,8 +112,14 @@ class Job:
 	def setProject(self,project):
 		self.project = project
 
-	def setOrder(self,order):
-		self.order = order
+	def addDependency(self,dependency):
+		self.setDependencies(self.getDependencies().append(dependency))
+
+	def setDependencies(self,dependencies):
+		"""
+		Args : dependencies - list of jobnames that the current jobs depends on completing before running.
+		"""
+		self.dependencies = dependencies
 
 	def getAdditionalOpts(self):
 		return self.additionalOpts
@@ -161,8 +167,8 @@ class Job:
 	def getProject(self):
 		return self.project
 
-	def getOrder(self):
-		return self.order
+	def getDependencies(self):
+		return self.dependencies
 
 	def write(self):
 		"""
@@ -209,6 +215,9 @@ class Job:
 			fout.write(self.tab + "sched_options " + additionalOpts + "\n")
 
 		fout.write("job_end\n\n")
-#		for dependency in self.getOrders():
-#			fout.write("order {jobname} after {dependency}\n".format(jobname=self.getName(),dependency=dependency))
+		dependencies = self.getDependencies()
+		for dependency in dependencies:
+			fout.write("order {jobname} after {dependency}\n".format(jobname=self.getName(),dependency=dependency))
+		if dependencies:
+			fout.write("\n")
 		fout.close()

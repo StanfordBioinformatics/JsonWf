@@ -20,16 +20,20 @@
 		"items": {
 			"type": "object",
 			"additionalProperties": false,
-			"properties": {
 
-				"required": ["id","enable","qsub"],
+				"required": ["program","id","enable","qsub"],
 				"properties": {
-			
-					"id": { "type": "integer" },
+
+					"program": { "type": "string" },	
 
 					"enable": {
 						"type": "integer",
 						"enum": [0,1]
+					},
+					
+					"dependencies": { 
+						"type": "array",
+						"items": { "type": "string" }
 					},
 			
 					"modules": { "type": ["string"] },
@@ -40,10 +44,8 @@
 		
 					"qsub": {
 						"type": "object",
-						"required": ["name"],
 						"properties": {
 					
-							"name": { "type": "string" },
 							"slots": { "type": "integer" },
 
 							"mem": { "type": "integer" },
@@ -78,7 +80,6 @@
 						"type": "array"
 					}
 				}
-			}
 		}
 	}
 }
