@@ -50,7 +50,7 @@ def expandVars(prog):
 			count = -1
 			for part in val:
 				count += 1
-				if part.startswith("#"):
+				if part.startswith("#/"):
 					origPart = part
 					part = resolveJsonPointer(part)
 					print ("Resolved {origPart} to {part}".format(origPart=origPart,part=part))
@@ -66,19 +66,25 @@ def resolveJsonPointer(txt):
 	Args     :
 	Returns  :
 	"""
-	txt = txt.lstrip("#")
+	origTxt = txt
+	txt = txt.lstrip("#/")
 	num = None
 	if numReg.search(txt):
 		num = int(txt[-1])
-		txt = txt[:-2] #2, b/c 1 for # and 1 for /
-	txt = txt.split("/")[1:]
+		txt = txt[:-2] #2, b/c 1 for number and 1 for /
+	txt = txt.split("/")
 	exCode = "jconf"
 	for key in txt:
 		exCode += "['{0}']".format(key)
 	if num:
 		exCode += "[{0}]".format(num)
 	print ("evalCode is {0}".format(exCode))
-	return eval(exCode)
+	try:
+		dereferenced =  eval(exCode)
+	except KeyError:
+		raise KeyError("Failed to dereference JSON pointer {p} in conf file'{c}'. Verify that the path exists in the conf file.".format(p=origTxt,c=args.conf_file))
+	
+	return dereferenced
 
 def checkResource(txt):
 	"""
