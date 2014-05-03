@@ -297,6 +297,8 @@ resdico = {}
 if resources:
 	for i in resources:
 		key,val = i.split("=")	
+		if os.path.exists(val):
+			val = os.path.abspath(val)
 		resdico[key] = val
 
 jsonResources = {}
