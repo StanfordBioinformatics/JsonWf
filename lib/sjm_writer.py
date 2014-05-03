@@ -215,9 +215,16 @@ class Job:
 			fout.write(self.tab + "sched_options " + additionalOpts + "\n")
 
 		fout.write("job_end\n\n")
-		dependencies = self.getDependencies()
-		for dependency in dependencies:
-			fout.write("order {jobname} after {dependency}\n".format(jobname=self.getName(),dependency=dependency))
-		if dependencies:
-			fout.write("\n")
 		fout.close()
+
+def writeDependencies(dico,sjmfile):
+	"""
+	Function : Writes job dependencies to an SJM file.
+	Args     : dico - dict where keys are jobnames and each value is a list of jobnames. Each key depends on the completion of all jobs in it's value before it can run.
+						 sjmfile - a file in SJM format
+	"""
+	fout = open(sjmfile,'a')
+	for jobname in dico:
+		for dependency in dico[jobname]:
+			fout.write("order {jobname} after {dependency}\n".format(jobname=jobname,dependency=dependency))
+	fout.close()

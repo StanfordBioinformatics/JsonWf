@@ -97,6 +97,7 @@ def checkResource(txt):
 	Args     : txt - str.
 	Returns  : str. txt that has undergone variable expansion via the shell.
 	"""
+	txt = str(txt)
 	groupiter = reg.finditer(txt)	
 	for i in groupiter:
 		varName = i.groupdict()['var']	
@@ -111,9 +112,6 @@ def checkResource(txt):
 	txt = subprocess.Popen('echo -n "{txt}"'.format(txt=txt),shell=True,stdout=subprocess.PIPE).communicate()[0]
 	return txt
         
-
-
-
 
 def makeCmd(programName,prog):	
 	"""
@@ -172,14 +170,20 @@ def makeCmd(programName,prog):
 	qsub = prog['qsub']
 	jobname = programName
 	job = sjm_writer.Job(jobname)
+	job.setSjmFile(sjmfile)
 
+	dependencies = []
 	try:
-		job.setDependencies(prog['dependencies'])
+		dependencies = prog['dependencies']
 	except KeyError:
 		#property not required
 		pass
 
-	job.setSjmFile(sjmfile)
+	if dependencies:
+		if jobname not in allDependencies:
+			allDependencies[jobname] = []
+		allDependencies[jobname].extend(dependencies)
+
 	job.setCmd(cmd)
 
 	job.setCwd(outdir)
@@ -249,8 +253,6 @@ def makeCmd(programName,prog):
 		pass
 
 	job.write() #closes the file too
-
-
 
 
 coreQsubArgs = ["time","mem","slots","pe","host","queue", "project","outdir","-e","-o","cwd","name"]
@@ -333,6 +335,7 @@ else:
 for var in resdico:
 	os.environ[var] = str(resdico[var])
 
+allDependencies = {}
 for programName in jconf['analyses']:
 #	print (jconf['analyses'][programName])
 	pdico = jconf['analyses'][programName]
@@ -351,6 +354,7 @@ for programName in jconf['analyses']:
 	expandVars(pdico) #replace resoruce variables with their resource values
 	makeCmd(programName,pdico)
 	
+sjm_writer.writeDependencies(allDependencies,sjmfile)
 
 if run:
 	subprocess.call("sjm {sjmfile}".format(sjmfile=sjmfile),shell=True)
