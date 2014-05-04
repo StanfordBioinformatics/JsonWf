@@ -302,6 +302,7 @@ if resources:
 		if os.path.exists(val):
 			val = os.path.abspath(val)
 		resdico[key] = val
+		os.environ[key] = val
 
 jsonResources = {}
 try:
@@ -311,9 +312,12 @@ except KeyError:
 
 #if jsonResources exists, then add it's keys and values to resources dict, but
 # only if the key doens't exist already.
+expandVars(jsonResources)
 for i  in jsonResources:
 	if i not in resdico:
-		resdico[i] = jsonResources[str(i)]
+		os.environ[i] = str(jsonResources[i])
+		resdico[i] = str(jsonResources[i])
+
 	
 
 globalQsub = False
@@ -329,11 +333,10 @@ if globalQsub_intersect:
 		sys.stderr.write("Qsub resource {res} in conf file {conf} clashes with a resource by the same name in the conf file's 'resource' object.\n".format(res=res,conf=args.conf_file))		
 	raise Exception("Exiting due to resource key clashes.")
 else:
+	for key in globalQsub:
+		os.environ[key] = str(globalQsub[key])
 	resdico.update(globalQsub)
-
 #os.environ internally calls os.putenv, which will also set the environment variables at the outter shell level.
-for var in resdico:
-	os.environ[var] = str(resdico[var])
 
 allDependencies = {}
 for programName in jconf['analyses']:

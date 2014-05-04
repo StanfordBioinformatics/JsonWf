@@ -32,6 +32,9 @@ within other text.  For example:
 	"path": "/data/dev/${project}/all"
 Furthermore, all resources are added to the list of environment variables, and each JSON string value is evaluated through the shell. Therefore, BASH syntax of any sort is supported in the value and will be evaulated through the shell's 'echo' utility.
 
+A general resource can also reference a CL resources that was specified in key=value format.  CL resources will be set as environment variables, as will be general resoruces, but the former first in order that the latter can undergo variable expansion.
+
+
 3) QSUB Resources - A top-level 'qsub' object that contains qsub options to
 use across all analyses. This is usefule for setting common options only once,
 rather that repetitively for each analysis. A reference is made to a qsub
