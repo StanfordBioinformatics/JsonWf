@@ -13,6 +13,13 @@ import re
 reg = re.compile(r'\${(?P<var>[\d\w]+)}')
 numReg = re.compile(r'\d$')
 
+def enabled(dependency):
+	"""
+	Function : Checks whether an analysis is enabled or not.
+	Args     : dependency - str. An analysis name.
+	"""
+	return jconf['analyses'][dependency]['enable']
+
 def rmComments(dico):
 	"""
 	Function : Given a dict, removes keys that start with a "#", which are taken to be a comment.
@@ -180,9 +187,11 @@ def makeCmd(programName,prog):
 		pass
 
 	if dependencies:
-		if jobname not in allDependencies:
-			allDependencies[jobname] = []
-		allDependencies[jobname].extend(dependencies)
+		for d in dependencies:
+			if enabled(d):
+				if jobname not in allDependencies:
+					allDependencies[jobname] = []
+				allDependencies[jobname].extend(dependencies)
 
 	job.setCmd(cmd)
 
@@ -339,6 +348,7 @@ else:
 #os.environ internally calls os.putenv, which will also set the environment variables at the outter shell level.
 
 allDependencies = {}
+	
 for programName in jconf['analyses']:
 #	print (jconf['analyses'][programName])
 	pdico = jconf['analyses'][programName]
