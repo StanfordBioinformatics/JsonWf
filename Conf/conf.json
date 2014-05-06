@@ -20,6 +20,7 @@
 	"analyses": {
 
 		"fastqc": {
+			"program": "fastqc",
 			"enable": 1,
 			"modules": ["fastqc/0.10.1"],
 			"inputFormat": "bam",
