@@ -13,6 +13,40 @@ import re
 reg = re.compile(r'\${(?P<var>[\d\w]+)}')
 numReg = re.compile(r'\d$')
 
+def addToEnvironment(key=False,value=False,dico={}):
+	"""
+   Function : Adds environment variables that are passed in as a dict or key and value, or both.
+	 Args     : key,value - str.
+							dico - dict of variables to add to the environment, where each key and value are strings.
+	 Returns  : 
+	"""
+	#os.environ internally calls os.putenv, which will also set the environment variables at the outter shell level.
+	if key and not value:
+		raise ValueError("kwality.addToEnvironment() must have argument 'value' set when argument 'key' is set.")
+	elif value and not key:
+		raise ValueError("kwality.addToEnvironment() must have argument 'key' set when argument 'value' is set.")	
+
+	if key:
+		key = str(key)
+		value = str(value)
+		if key not in resdico:
+			resdico[key] = value
+			os.environ[key] = value
+		else:
+			raise Exception("Found duplicate key {key} in your resources")
+	
+	for key in dico:
+		value = dico[key]
+		if type(value) is dict:
+			addToEnvironment(dico=value)
+		key = str(key)
+		value = str(dico[key])
+		if key not in resdico:
+			resdico[key] = value
+			os.environ[key] = value
+		else:
+			raise Exception("Found duplicate key {key} in your resources")
+
 def enabled(dependency):
 	"""
 	Function : Checks whether an analysis is enabled or not.
@@ -270,17 +304,24 @@ description = "Given a JSON configuration file that abides by the packaged schem
 
 parser = ArgumentParser(description=description)
 parser.add_argument('--schema',default="/srv/gs1/software/gbsc/kwality/1.0/schema.json", help="The JSON schema that will be used to validate the JSON configuration file. Default is %(default)s.")
-parser.add_argument('--outdir',required=True,help="The directory to output all result files. Can be a relative or absoulte direcotry path. Will be created if it does't exist already.")
+parser.add_argument('--outdir',required=True,help="The directory to output all result files. Can be a relative or absolute directory path. Will be created if it does't exist already. Will be added as a global resource.")
 parser.add_argument('-c','--conf-file',required=True,help="Configuration file in JSON format.")
-parser.add_argument('resources',nargs="*",help="One or more space-delimited key=value resources that can override or append to the keys of the resoruce object in the JSON conf file.")
+parser.add_argument('resources',nargs="*",help="One or more space-delimited key=value resources that can override or append to the keys of the resoruce object in the JSON conf file. The value of the --outdir option will automatically be added here with the variable name 'outdir'.")
 parser.add_argument('-s','--sjmfile',required=True,help="Output SJM file. Appends to it by default.")
 parser.add_argument('-v','--verbose',help="Print extra details to stdout.")
-parser.add_argument('--run',action="store_true",help="Don't just generate the sjm file, run it too.")
+parser.add_argument('--run',action="store_true",help="Don't just generate the sjm file, run it too. By default, the program does not wait for the sjm job to complete; see --wait.")
+parser.add_argument('--wait',action="store_true",help="When --run is specified, indicates that the script should wait for the sjm job to complete before exiting.")
 
 args = parser.parse_args()
+if args.wait and not args.run:
+	parser.error("Argument --wait cannot be specified w/o --run")
+
+resdico = {} #resource dict
+
 outdir = os.path.abspath(args.outdir)
 if not os.path.exists(outdir):
 	os.mkdir(outdir)
+addToEnvironment(key="outdir",value=outdir)
 #outdir will be added to the globalQsub dict below.
 logdir = os.path.join(outdir,"JobStatus")
 if not os.path.exists(logdir):
@@ -304,14 +345,12 @@ jschema = json.load(sfh)
 jsonschema.validate(jconf,jschema)
 
 resources = args.resources
-resdico = {}
 if resources:
 	for i in resources:
 		key,val = i.split("=")	
 		if os.path.exists(val):
 			val = os.path.abspath(val)
-		resdico[key] = val
-		os.environ[key] = val
+		addToEnvironment(key=key,value=val)
 
 jsonResources = {}
 try:
@@ -319,33 +358,35 @@ try:
 except KeyError:
 	pass
 
-#if jsonResources exists, then add it's keys and values to resources dict, but
-# only if the key doens't exist already.
-expandVars(jsonResources)
-for i  in jsonResources:
-	if i not in resdico:
-		os.environ[i] = str(jsonResources[i])
-		resdico[i] = str(jsonResources[i])
 
-	
+outputDirs = False
+try:
+	outputDirs = jsonResources.pop('outdirs')
+except KeyError: 
+	pass
+
+#check if output direcories are defined, and deal with these first, because it's allowed for
+# the JSON resource dict called 'outfiles' to reference variables in the 'outdirs' JSON resource dict.
+# This is the only time in the code that I let JSON resources be able to reference other JSON resources.
+# 
+if outputDirs:
+	expandVars(outputDirs)
+	for key in outputDirs:
+		path = outputDirs[key]
+		if not os.path.exists(path):
+			os.mkdir(path)
+	addToEnvironment(dico=outputDirs)
+
+expandVars(jsonResources)
+addToEnvironment(dico=jsonResources)	
 
 globalQsub = False
 try:
-	globalQsub = jconf['qsub']
+	globalQsub = jsonResources['qsub']
 except KeyError:
 	pass
 
 globalQsub['outdir'] = outdir
-globalQsub_intersect = set(resdico).intersection(globalQsub)	
-if globalQsub_intersect:
-	for res in globalQsub_intersect:
-		sys.stderr.write("Qsub resource {res} in conf file {conf} clashes with a resource by the same name in the conf file's 'resource' object.\n".format(res=res,conf=args.conf_file))		
-	raise Exception("Exiting due to resource key clashes.")
-else:
-	for key in globalQsub:
-		os.environ[key] = str(globalQsub[key])
-	resdico.update(globalQsub)
-#os.environ internally calls os.putenv, which will also set the environment variables at the outter shell level.
 
 allDependencies = {}
 	
@@ -370,7 +411,10 @@ for programName in jconf['analyses']:
 sjm_writer.writeDependencies(allDependencies,sjmfile)
 
 if run:
-	subprocess.call("sjm {sjmfile}".format(sjmfile=sjmfile),shell=True)
+	if args. wait:
+		subprocess.call("sjm {sjmfile}".format(sjmfile=sjmfile),shell=True)
+	else:
+		subprocess.Popen("sjm {sjmfile}".format(sjmfile=sjmfile),shell=True)
 
 
 #from jsonschema import validate

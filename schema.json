@@ -7,12 +7,20 @@
 
 				"reference": { "type": "string" },
 
-				"dbsnp": { "type": "string"}
-		}
-	},
+				"dbsnp": { "type": "string"},
+	
+				"outdirs": {
+						"type": "object"
+				},
 
-	"qsub": {
-		"type": "object"
+				"outfiles": {
+						"type": "object"
+				},
+
+				"qsub": {
+						"type": "object"
+				}
+		}
 	},
 			
 	"analyses": {

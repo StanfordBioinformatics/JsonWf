@@ -3,18 +3,48 @@
 	"resources": {
 		"reference": "/srv/gs1/projects/scg/Resources/GATK/hg19/ucsc.hg19.fasta",
 		"dbsnp": "/srv/gs1/projects/scg/Resources/GATK/hg19-3.0/dbsnp_138.hg19.vcf",
-		"GATK": "/srv/gs1/software/gatk/gatk-3.0/GenomeAnalysisTK-3.0-0/",
-		"PICARD": "/srv/gs1/software/picard-tools/1.111",
-		"ACMG_Genes": "/srv/gsfs0/projects/gbsc/Clinical_Service/dbases/ACMG/ACMG_genes.bed",
+		"gatk": "/srv/gs1/software/gatk/gatk-3.0/GenomeAnalysisTK-3.0-0/",
+		"picard": "/srv/gs1/software/picard-tools/1.111",
+		"ACMG_Genes": "/srv/gsfs0/projects/gbsc/Clinical_Service/dbases/acmg/refseq_acmg_genes.bed",
 		"rModule": "r",
-		"javaModule": "java/latest"
-	},
+		"javaModule": "java/latest",
+		"samtoolsModule": "samtools/0.1.19",
+	
+		"outdirs": {
+			"d_fastqc": "${outdir}/fastqc",
+			"d_flagstat": "${outdir}/flagstat",
+			"d_depthOfCoverage": "${outdir}/coverage",
+			"d_concordance": "${outdir}/concordance",
+			"d_discordance": "${outdir}/discordance",
+			"d_variantEval": "${outdir}/variantEval",
+			"d_genotypeConcordance": "${outdir}/gtCondordance",
+			"d_collectAlignmentSummaryMetrics": "${outdir}/alnSumMetrics",
+			"d_collectGcBiasMetrics": "${outdir}/gcBiasMetrics",
+			"d_collectInsertSizeMetrics": "${outdir}/insertSizeMetrics",
+			"d_meanQualityByCycle": "${outdir}/meanQualByCycle",
+			"d_qualityScoreDistribution": "${outdir}/qcScoreDist"
+		},
 
-	"qsub": {
-		"-M": "nathankw@stanford.edu",
-		"-m": "ba",
-		"-A": "clinical-services",
-		"-R": "y"
+		"outfiles": {
+			"f_flagstat": "${d_flagstat}flagstats.txt",
+			"f_depthOfCoverage": "${d_depthOfCoverage}/coverage",
+			"f_concordance": "${d_concordance}/concordance.vcf",
+			"f_discordance": "${d_discordance}/discordance.vcf",
+			"f_variantEval": "${d_variantEval}/variantEval_metrics.txt",
+			"f_genotypeConcordance": "${d_genotypeConcordance}/gtConcordance.txt",
+			"f_collectAlignmentSummaryMetrics": "${d_collectAlignmentSummaryMetrics}/alnSummaryMetrics.txt",
+			"f_collectGcBiasMetrics": "${d_collectGcBiasMetrics}/gcBiasMetrics.txt",
+			"f_collectInsertSizeMetrics": "${d_collectInsertSizeMetrics}/insertSizeMetrics.txt",
+			"f_meanQualityByCycle": "${d_meanQualityByCycle}/meanQualitybyCycle.txt",
+			"f_qualityScoreDistribution": "${d_qualityScoreDistribution}/qualityScoreDist.txt"
+		},
+
+		"qsub": {
+			"-M": "nathankw@stanford.edu",
+			"-m": "ba",
+			"-A": "clinical-services",
+			"-R": "y"
+		}
 	},
 	
 	"analyses": {
@@ -24,7 +54,6 @@
 			"enable": 1,
 			"modules": ["fastqc/0.10.1"],
 			"inputFormat": "bam",
-			"inputArg": "null",
 
 			"qsub": {
 				"name": "FastQC",
@@ -34,19 +63,33 @@
 		
 			"params": {
 				"--threads": 5,
-				"--outdir": "${outdir}"
+				"--outdir": "${fastqc_out}"
 			},
 		
 			"args": ["${bam}"]
 		},
 
+		"flagstat": {
+			"program": "samtools flagstat",
+			"enable": 1,
+			"modules": ["samtoolsModule"],
+			"inputFormat": "bam",
+
+			"qsub": {
+				"name": "flagstat",
+				"slots": 1,
+				"mem": "3G"
+			},
+		
+			"args": ["${bam}",">","${f_flagstat}"]
+		},
+
 		"DepthOfCoverage": {
 			"enable": 1,
 			"modules": ["${javaModule}"],
-			"jar": "${GATK}/GenomeAnalysisTK.jar",
+			"jar": "${gatk}/GenomeAnalysisTK.jar",
 			"javavm": "-Xmx5G",
 			"inputFormat": "bam",
-			"inputArg": "-I",
 
 			"qsub": {
 				"name": "DepthOfCoverage",
@@ -59,14 +102,14 @@
 		    "-L": "${ACMG_Genes}",
 				"-R": "${reference}",
 				"-I": "${bam}",
-				"-o": "coverage_hist.txt"
+				"-o": "${f_depthOfCoverage}"
 			}
 		},
 
 		"Concordance": {
 			"enable": 1,
 			"modules": ["${javaModule}"],
-			"jar": "${GATK}/GenomeAnalysisTK.jar",
+			"jar": "${gatk}/GenomeAnalysisTK.jar",
 			"javavm": "-Xmx2G",
 			"inputFormat": "vcf",
 			"inputArg": "--variant",
@@ -85,14 +128,14 @@
 				"--variant": "${vcf}",
 				"--concordance": "${dbsnp}",
 				"-R": "${reference}",
-				"-o": "concordance.vcf"
+				"-o": "${f_concordance}"
 			}
 		},
 
 		"Discordance": {
 			"enable": 1,
 			"modules": ["${javaModule}"],
-			"jar": "${GATK}/GenomeAnalysisTK.jar",
+			"jar": "${gatk}/GenomeAnalysisTK.jar",
 			"javavm": "-Xmx2G",
 			"inputFormat": "vcf",
 			"inputArg": "--variant",
@@ -111,14 +154,14 @@
 				"--variant": "${vcf}",
 				"--discordance": "${dbsnp}",
 				"-R": "${reference}",
-				"-o": "discordance.vcf"
+				"-o": "${f_discordance}"
 			}
 		},
 
 		"VariantEval": {
 			"enable": 1,
 			"modules": ["${javaModule}"],
-			"jar": "${GATK}/GenomeAnalysisTK.jar",
+			"jar": "${gatk}/GenomeAnalysisTK.jar",
 			"javavm": "-Xmx2G",
 			"inputFormat": "vcf",
 
@@ -134,7 +177,7 @@
 		    "-L": "${ACMG_Genes}",
 				"-R": "${reference}",
 				"--eval:set1,vcf": "${vcf}",
-				"-o": "variantEval_metrics.txt",
+				"-o": "${f_variantEval}",
 				"-noEV": "",
 				"-EV CountVariants -EV TiTvVariantEvaluator": "",
 				"-noST": "",
@@ -146,7 +189,7 @@
 		"GenotypeConcordance": {
 			"enable": 1,
 			"modules": ["${javaModule}"],
-			"jar": "${GATK}/GenomeAnalysisTK.jar",
+			"jar": "${gatk}/GenomeAnalysisTK.jar",
 			"javavm": "-Xmx2G",
 			"inputFormat": "vcf",
 
@@ -160,7 +203,7 @@
 				"-T": "GenotypeConcordance",
 				"-R": "${reference}",
 				"--eval:set1,vcf": "${vcf}",
-				"-o": "genotypeConcordance.txt",
+				"-o": "${f_genotypeConcordance}",
 				"--comp": "${dbsnp}"
 			}
 		},
@@ -169,7 +212,7 @@
 		"CollectAlignmentSummaryMetrics": {
 			"enable": 0,
 			"modules": ["${javaModule}"],
-			"jar": "${PICARD}/CollectAlignmentSummaryMetrics.jar",
+			"jar": "${picard}/CollectAlignmentSummaryMetrics.jar",
 			"javavm": "-Xmx4G",
 			"inputFormat": "bam",
 			
@@ -182,7 +225,7 @@
 			"params": {
 				"ASSUME_SORTED=": "true",
 				"INPUT=": "${bam}",
-				"OUTPUT=": "alnSummaryMetrics.txt",
+				"OUTPUT=": "${f_collectAlignmentSummaryMetrics}",
 				"REFERENCE_SEQUENCE=": "${reference}",
 				"METRIC_ACCUMULATION_LEVEL=": "ALL_READS"
 			}
@@ -191,7 +234,7 @@
 		"CollectGcBiasMetrics": {
 			"enable": 0,
 			"modules": ["${javaModule}","${rModule}"],
-			"jar": "${PICARD}/CollectGcBiasMetrics.jar",
+			"jar": "${picard}/CollectGcBiasMetrics.jar",
 			"javavm": "-Xmx4G",
 			"inputFormat": "bam",
 			
@@ -204,7 +247,7 @@
 			"params": {
 				"ASSUME_SORTED=": "true",
 				"INPUT=": "${bam}",
-				"OUTPUT=": "gcBiasMetrics.txt",
+				"OUTPUT=": "${f_collectGcBiasMetrics}",
 				"REFERENCE_SEQUENCE=": "${reference}",
 				"SUMMARY_OUTPUT=": "gcBiasMetrics_summary.txt",
 				"CHART_OUTPUT=": "gcBiasMetrics_chart.pdf"
@@ -214,7 +257,7 @@
 		"CollectInsertSizeMetrics": {
 			"enable": 0,
 			"modules": ["${javaModule}","${rModule}"],
-			"jar": "${PICARD}/CollectInsertSizeMetrics.jar",
+			"jar": "${picard}/CollectInsertSizeMetrics.jar",
 			"javavm": "-Xmx2G",
 			"inputFormat": "bam",
 			
@@ -227,7 +270,7 @@
 			"params": {
 				"ASSUME_SORTED=": "true",
 				"INPUT=": "${bam}",
-				"OUTPUT=": "insertSizeMetrics.txt",
+				"OUTPUT=": "${f_collectInsertSizeMetrics}",
 				"REFERENCE_SEQUENCE=": "${reference}",
 				"METRIC_ACCUMULATION_LEVEL=": "ALL_READS",
 				"HISTOGRAM_FILE=": "insertSizeHist.pdf"
@@ -237,7 +280,7 @@
 		"MeanQualityByCycle": {
 			"enable": 0,
 			"modules": ["${javaModule}","${rModule}"],
-			"jar": "${PICARD}/MeanQualityByCycle.jar",
+			"jar": "${picard}/MeanQualityByCycle.jar",
 			"javavm": "-Xmx2G",
 			"inputFormat": "bam",
 			
@@ -250,7 +293,7 @@
 			"params": {
 				"ASSUME_SORTED=": "true",
 				"INPUT=": "${bam}",
-				"OUTPUT=": "meanQualitybyCycle.txt",
+				"OUTPUT=": "${f_meanQualityByCycle}",
 				"REFERENCE_SEQUENCE=": "${reference}",
 				"ALIGNED_READS_ONLY=": "true",
 				"PF_READS_ONLY=": "true",
@@ -262,7 +305,7 @@
 		"QualityScoreDistribution": {
 			"enable": 0,
 			"modules": ["${javaModule}","${rModule}"],
-			"jar": "${PICARD}/QualityScoreDistribution.jar",
+			"jar": "${picard}/QualityScoreDistribution.jar",
 			"javavm": "-Xmx2G",
 			"inputFormat": "bam",
 			
@@ -275,7 +318,7 @@
 			"params": {
 				"ASSUME_SORTED=": "true",
 				"INPUT=": "${bam}",
-				"OUTPUT=": "qualityScoreDistribution.txt",
+				"OUTPUT=": "${f_qualityScoreDistribution}",
 				"REFERENCE_SEQUENCE=": "${reference}",
 				"ALIGNED_READS_ONLY=": "true",
 				"PF_READS_ONLY=": "true",
