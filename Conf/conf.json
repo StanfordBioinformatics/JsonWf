@@ -10,35 +10,6 @@
 		"javaModule": "java/latest",
 		"samtoolsModule": "samtools/0.1.19",
 	
-		"outdirs": {
-			"d_fastqc": "${outdir}/fastqc",
-			"d_flagstat": "${outdir}/flagstat",
-			"d_depthOfCoverage": "${outdir}/coverage",
-			"d_concordance": "${outdir}/concordance",
-			"d_discordance": "${outdir}/discordance",
-			"d_variantEval": "${outdir}/variantEval",
-			"d_genotypeConcordance": "${outdir}/gtCondordance",
-			"d_collectAlignmentSummaryMetrics": "${outdir}/alnSumMetrics",
-			"d_collectGcBiasMetrics": "${outdir}/gcBiasMetrics",
-			"d_collectInsertSizeMetrics": "${outdir}/insertSizeMetrics",
-			"d_meanQualityByCycle": "${outdir}/meanQualByCycle",
-			"d_qualityScoreDistribution": "${outdir}/qcScoreDist"
-		},
-
-		"outfiles": {
-			"f_flagstat": "${d_flagstat}flagstats.txt",
-			"f_depthOfCoverage": "${d_depthOfCoverage}/coverage",
-			"f_concordance": "${d_concordance}/concordance.vcf",
-			"f_discordance": "${d_discordance}/discordance.vcf",
-			"f_variantEval": "${d_variantEval}/variantEval_metrics.txt",
-			"f_genotypeConcordance": "${d_genotypeConcordance}/gtConcordance.txt",
-			"f_collectAlignmentSummaryMetrics": "${d_collectAlignmentSummaryMetrics}/alnSummaryMetrics.txt",
-			"f_collectGcBiasMetrics": "${d_collectGcBiasMetrics}/gcBiasMetrics.txt",
-			"f_collectInsertSizeMetrics": "${d_collectInsertSizeMetrics}/insertSizeMetrics.txt",
-			"f_meanQualityByCycle": "${d_meanQualityByCycle}/meanQualitybyCycle.txt",
-			"f_qualityScoreDistribution": "${d_qualityScoreDistribution}/qualityScoreDist.txt"
-		},
-
 		"qsub": {
 			"-M": "nathankw@stanford.edu",
 			"-m": "ba",
@@ -55,15 +26,18 @@
 			"modules": ["fastqc/0.10.1"],
 			"inputFormat": "bam",
 
+			"outdirs": {
+				"d_fastqc": "${outdir}/fastqc"
+			},
+
 			"qsub": {
 				"name": "FastQC",
-				"slots": 5,
 				"mem": "1G"
 			},
 		
 			"params": {
 				"--threads": 5,
-				"--outdir": "${fastqc_out}"
+				"--outdir": "${d_fastqc}"
 			},
 		
 			"args": ["${bam}"]
@@ -72,8 +46,16 @@
 		"flagstat": {
 			"program": "samtools flagstat",
 			"enable": 1,
-			"modules": ["samtoolsModule"],
+			"modules": ["${samtoolsModule}"],
 			"inputFormat": "bam",
+
+			"outdirs": {
+				"d_flagstat": "${outdir}/flagstat"
+			},
+
+			"outfiles": {
+				"f_flagstat": "${d_flagstat}/flagstat.txt"
+			},
 
 			"qsub": {
 				"name": "flagstat",
@@ -91,6 +73,14 @@
 			"javavm": "-Xmx5G",
 			"inputFormat": "bam",
 
+			"outdirs": {
+				"d_depthOfCoverage": "${outdir}/coverage"
+			},
+			
+			"outfiles": {
+				"f_depthOfCoverage": "${d_depthOfCoverage}/coverage"
+			},
+					
 			"qsub": {
 				"name": "DepthOfCoverage",
 				"slots": 1,
@@ -112,8 +102,14 @@
 			"jar": "${gatk}/GenomeAnalysisTK.jar",
 			"javavm": "-Xmx2G",
 			"inputFormat": "vcf",
-			"inputArg": "--variant",
-			"outputArg": "-o",
+
+			"outdirs": {
+				"d_concordance": "${outdir}/concordance"
+			},
+
+			"outfiles": {
+				"f_concordance": "${d_concordance}/concordance.vcf"
+			},
 
 			"qsub": {
 				"name": "SelectVariants_concordance",
@@ -124,7 +120,7 @@
 			"params": {
 				"-T": "SelectVariants",
 		    "-L": "${ACMG_Genes}",
-				"-nt": 10,
+				"-nt": 8,
 				"--variant": "${vcf}",
 				"--concordance": "${dbsnp}",
 				"-R": "${reference}",
@@ -138,8 +134,14 @@
 			"jar": "${gatk}/GenomeAnalysisTK.jar",
 			"javavm": "-Xmx2G",
 			"inputFormat": "vcf",
-			"inputArg": "--variant",
-			"outputArg": "-o",
+
+			"outdirs": {
+				"d_discordance": "${outdir}/discordance"
+			},
+
+			"outfiles": {
+				"f_discordance": "${d_discordance}/discordance.vcf"
+			},
 
 			"qsub": {
 				"name": "SelectVariants_discordance",
@@ -164,6 +166,14 @@
 			"jar": "${gatk}/GenomeAnalysisTK.jar",
 			"javavm": "-Xmx2G",
 			"inputFormat": "vcf",
+
+			"outdirs": {
+				"d_variantEval": "${outdir}/variantEval"
+			},
+
+			"outfiles": {
+				"f_variantEval": "${d_variantEval}/variantEval_metrics.txt"
+			},
 
 			"qsub": {
 				"name": "VariantEval",
@@ -193,6 +203,14 @@
 			"javavm": "-Xmx2G",
 			"inputFormat": "vcf",
 
+			"outdirs": {
+				"d_genotypeConcordance": "${outdir}/gtConcordance"
+			},
+
+			"outfiles": {
+				"f_genotypeConcordance": "${d_genotypeConcordance}/gtConcordance.txt"
+			},
+
 			"qsub": {
 				"name": "GenotypeConcordance",
 				"slots": 1,
@@ -208,14 +226,21 @@
 			}
 		},
 
-
 		"CollectAlignmentSummaryMetrics": {
-			"enable": 0,
+			"enable": 1,
 			"modules": ["${javaModule}"],
 			"jar": "${picard}/CollectAlignmentSummaryMetrics.jar",
 			"javavm": "-Xmx4G",
 			"inputFormat": "bam",
+
+			"outdirs": {
+				"d_collectAlignmentSummaryMetrics": "${outdir}/alnSumMetrics"
+			},
 			
+			"outfiles": {
+				"f_collectAlignmentSummaryMetrics": "${d_collectAlignmentSummaryMetrics}/alnSummaryMetrics.txt"
+			},
+
 			"qsub": {
 				"name": "CollectAlignmentSummaryMetrics",
 				"slots": 1,
@@ -232,11 +257,19 @@
 		},
 
 		"CollectGcBiasMetrics": {
-			"enable": 0,
+			"enable": 1,
 			"modules": ["${javaModule}","${rModule}"],
 			"jar": "${picard}/CollectGcBiasMetrics.jar",
 			"javavm": "-Xmx4G",
 			"inputFormat": "bam",
+
+			"outdirs": {
+				"d_collectGcBiasMetrics": "${outdir}/gcBiasMetrics"
+			},
+
+			"outfiles": {
+				"f_collectGcBiasMetrics": "${d_collectGcBiasMetrics}/gcBiasMetrics.txt"
+			},
 			
 			"qsub": {
 				"name": "CollectGcBiasMetrics",
@@ -255,11 +288,19 @@
 		},
 
 		"CollectInsertSizeMetrics": {
-			"enable": 0,
+			"enable": 1,
 			"modules": ["${javaModule}","${rModule}"],
 			"jar": "${picard}/CollectInsertSizeMetrics.jar",
 			"javavm": "-Xmx2G",
 			"inputFormat": "bam",
+
+			"outdirs": {
+				"d_collectInsertSizeMetrics": "${outdir}/insertSizeMetrics"
+			},
+			
+			"outfiles": {	
+				"f_collectInsertSizeMetrics": "${d_collectInsertSizeMetrics}/insertSizeMetrics.txt"
+			},
 			
 			"qsub": {
 				"name": "CollectInsertSizeMetrics",
@@ -278,11 +319,19 @@
 		},
 
 		"MeanQualityByCycle": {
-			"enable": 0,
+			"enable": 1,
 			"modules": ["${javaModule}","${rModule}"],
 			"jar": "${picard}/MeanQualityByCycle.jar",
 			"javavm": "-Xmx2G",
 			"inputFormat": "bam",
+
+			"outdirs": {
+				"d_meanQualityByCycle": "${outdir}/meanQualByCycle"
+			},
+		
+			"outfiles": {
+				"f_meanQualityByCycle": "${d_meanQualityByCycle}/meanQualitybyCycle.txt"
+			},
 			
 			"qsub": {
 				"name": "MeanQualityByCycle",
@@ -301,13 +350,21 @@
 			}
 		},
 
-
 		"QualityScoreDistribution": {
-			"enable": 0,
+			"enable": 1,
 			"modules": ["${javaModule}","${rModule}"],
 			"jar": "${picard}/QualityScoreDistribution.jar",
 			"javavm": "-Xmx2G",
 			"inputFormat": "bam",
+
+			"outdirs": {
+				"d_qualityScoreDistribution": "${outdir}/qcScoreDist"
+			},
+
+			"outfiles": {
+				"f_qualityScoreDistribution": "${d_qualityScoreDistribution}/qualityScoreDist.txt"
+			},
+			
 			
 			"qsub": {
 				"name": "QualityScoreDistribution",

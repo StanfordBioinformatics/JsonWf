@@ -10,7 +10,8 @@ import subprocess
 import re
 
 
-reg = re.compile(r'\${(?P<var>[\d\w]+)}')
+###varReg finds variables of the type $var and ${var} and ${var%%.txt}, ... variables can be mixed in with some string, such as a file path.
+varReg = re.compile(r'(\${(?P<brace>[\d\w]+))|(\$(?P<dollar>[\d\w]+))')
 numReg = re.compile(r'\d$')
 
 def addToEnvironment(key=False,value=False,dico={}):
@@ -139,13 +140,16 @@ def checkResource(txt):
 	Returns  : str. txt that has undergone variable expansion via the shell.
 	"""
 	txt = str(txt)
-	groupiter = reg.finditer(txt)	
+	groupiter = varReg.finditer(txt)	
 	for i in groupiter:
-		varName = i.groupdict()['var']	
+		dico = i.groupdict()
+		varName = dico['brace']
+		if not varName:
+			varName = dico['dollar']
 		try: 
 			replace = resdico[varName]
 		except KeyError:
-			raise ValueError("In configuration file, varible {varName} does not contain a resource.".format(varName=varName))
+			raise ValueError("Error: In configuration file, varible {varName} is not resource.".format(varName=varName))
 
 		##Hold off on update below, let all updates happen simultaneously though shell expansion with the call the subprocess below
 		#txt = re.sub(r'\${{{varName}}}'.format(varName=varName),replace,txt) 
@@ -278,8 +282,7 @@ def makeCmd(programName,prog):
 		#property not required
 		pass
 
-
-	qsub_other = "-o {logdir} -e {logdir}".format(logdir=logdir) + " "
+	qsub_other = ""
 	for arg in qsub:
 		if arg not in coreQsubArgs:
 			qsub_other += arg + " " + qsub[arg] + "  "
@@ -359,33 +362,16 @@ except KeyError:
 	pass
 
 
-outputDirs = False
-try:
-	outputDirs = jsonResources.pop('outdirs')
-except KeyError: 
-	pass
-
-#check if output direcories are defined, and deal with these first, because it's allowed for
-# the JSON resource dict called 'outfiles' to reference variables in the 'outdirs' JSON resource dict.
-# This is the only time in the code that I let JSON resources be able to reference other JSON resources.
-# 
-if outputDirs:
-	expandVars(outputDirs)
-	for key in outputDirs:
-		path = outputDirs[key]
-		if not os.path.exists(path):
-			os.mkdir(path)
-	addToEnvironment(dico=outputDirs)
 
 expandVars(jsonResources)
 addToEnvironment(dico=jsonResources)	
 
-globalQsub = False
+globalQsub = {}
 try:
 	globalQsub = jsonResources['qsub']
 except KeyError:
 	pass
-
+##I add outdir to globalQsub last to make sure that it's not overwritten by jsonResources
 globalQsub['outdir'] = outdir
 
 allDependencies = {}
@@ -396,15 +382,45 @@ for programName in jconf['analyses']:
 	enable = pdico['enable']
 	if not enable:
 		continue
-	if globalQsub: #then add global qsub options to all analyses
-		qsubDico = {}
-		try:
-			qsubDico = pdico['qsub']	
-		except KeyError:
-			pass
-		for i in globalQsub:
-			if i not in qsubDico: #don't overwite!
-				qsubDico[i] = globalQsub[i]
+
+	#check if output direcories are defined, and deal with these first, because it's allowed for
+	# the JSON resource dict called 'outfiles' to reference variables in the 'outdirs' JSON resource dict.
+	# As a result, any keys in the outdirs objecdt will be added to the environment. Note that the keys in the outfiles
+	# object will also be added to the environment.  These two objects are the only cases where  global resources can be defined outside of the "resources" object.
+	# This is also the only time in the code that I allow a JSON resource to be able to reference other JSON resources.
+	# 
+	outdirs = {}
+	try:
+		outdirs = pdico['outdirs']
+	except KeyError:
+		pass
+	if outdirs:
+		expandVars(outdirs)
+		for key in outdirs:
+			path = outdirs[key]
+			if not os.path.exists(path):
+				os.mkdir(path)
+		addToEnvironment(dico=outdirs)
+		pdico.pop('outdirs')
+
+	outfiles = {}
+	try:
+		outfiles = pdico['outfiles']
+	except KeyError:
+		pass
+	if outfiles:
+		expandVars(outfiles)
+		addToEnvironment(dico=outfiles)
+		pdico.pop('outfiles')
+
+	qsubDico = {}
+	try:
+		qsubDico = pdico['qsub']	
+	except KeyError:
+		pass
+	for i in globalQsub:
+		if i not in qsubDico: #don't overwite!
+			qsubDico[i] = globalQsub[i]
 	expandVars(pdico) #replace resoruce variables with their resource values
 	makeCmd(programName,pdico)
 	
