@@ -15,7 +15,7 @@
 				"-M": "nathankw@stanford.edu",
 				"-m": "a",
 				"-A": "seq_center",
-				"-R": "y",
+				"-R": "y"
 		}
 	},
 	
@@ -126,7 +126,7 @@
 					"slots": 1
 				},
 			
-				"args": ["$cleanBam_out","$renameCleanBam_out"]
+				"args": ["${cleanBam_out}","$renameCleanBam_out"]
 		},
 
     "sortBam": {

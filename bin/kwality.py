@@ -8,11 +8,57 @@ from argparse import ArgumentParser
 import jsonschema
 import subprocess
 import re
+import copy
 
 
 ###varReg finds variables of the type $var and ${var} and ${var%%.txt}, ... variables can be mixed in with some string, such as a file path.
 varReg = re.compile(r'(\${(?P<brace>[\d\w]+))|(\$(?P<dollar>[\d\w]+))')
 numReg = re.compile(r'\d$')
+
+
+def checkCircDeps(allDependencies):
+	for analysis in allDependencies:
+		deps = allDependencies[analysis]
+		for d in deps:
+			try:
+				depDeps = allDependencies[d]
+			except KeyError:
+				depDeps = []
+			if analysis in depDeps:
+				raise Exception("Error: Circular dependencies found between analyses {analysis1} and {analysis2}".format(analysis1=analysis,analysis2=d))
+
+def getDependencies(analysis):
+	try:
+		deps = analysis['dependencies']
+	except KeyError:
+		return []
+	enabledDeps = []
+	for i in deps:
+		if not enabled(i):
+			continue
+		else:
+			enabledDeps.append(i)
+	return enabledDeps
+
+def rmDependency(dependency,allDependencies):
+	"""
+	Function : Given a dict with analysis names that have dependencies as keys, and values as lists of dependency names, removes
+             the passed in dependency named from each value.
+	"""
+	for analysis in allDependencies:
+		try:
+			index = allDependencies[analysis].index(dependency)
+		except ValueError:
+			index = -1
+		if index >=0:
+			allDependencies[analysis].pop(index)
+
+def getAnalyses():
+	analyses = []
+	for analysis in jconf['analyses']:
+		if enabled(analysis):
+			analyses.append(analysis)
+	return analyses
 
 def addToEnvironment(key=False,value=False,dico={}):
 	"""
@@ -48,12 +94,12 @@ def addToEnvironment(key=False,value=False,dico={}):
 		else:
 			raise Exception("Found duplicate key {key} in your resources")
 
-def enabled(dependency):
+def enabled(analysis):
 	"""
 	Function : Checks whether an analysis is enabled or not.
-	Args     : dependency - str. An analysis name.
+	Args     : analysis - str. An analysis name.
 	"""
-	return jconf['analyses'][dependency]['enable']
+	return jconf['analyses'][analysis]['enable']
 
 def rmComments(dico):
 	"""
@@ -95,7 +141,7 @@ def expandVars(prog):
 				if part.startswith("#/"):
 					origPart = part
 					part = resolveJsonPointer(part)
-					print ("Resolved {origPart} to {part}".format(origPart=origPart,part=part))
+					print ("Resolved {origPart} to {part}".fommat(origPart=origPart,part=part))
 				resourceValue= checkResource(part)
 				prog[key][count] = resourceValue
 					
@@ -149,7 +195,7 @@ def checkResource(txt):
 		try: 
 			replace = resdico[varName]
 		except KeyError:
-			raise ValueError("Error: In configuration file, varible {varName} is not resource.".format(varName=varName))
+			raise ValueError("Error: In configuration file, varible {varName} is not a resource.".format(varName=varName))
 
 		##Hold off on update below, let all updates happen simultaneously though shell expansion with the call the subprocess below
 		#txt = re.sub(r'\${{{varName}}}'.format(varName=varName),replace,txt) 
@@ -158,10 +204,10 @@ def checkResource(txt):
 	return txt
         
 
-def makeCmd(programName,prog):	
+def makeCmd(analysis,prog):	
 	"""
 	Function : String together a command and it's arguments from the input dictionary.
-	Args     : programName - str. Name of the program (i.e. the executable)
+	Args     : analysis - str. Name of the program (i.e. the executable)
 						 prog - dict structured as an 'analyses' object in the json schema.
 	"""
 	cmd = ""
@@ -210,26 +256,11 @@ def makeCmd(programName,prog):
 		for arg in progArgs:
 			cmd += " " + arg + " "
 
-
-
 	qsub = prog['qsub']
-	jobname = programName
+	jobname = analysis
 	job = sjm_writer.Job(jobname)
 	job.setSjmFile(sjmfile)
 
-	dependencies = []
-	try:
-		dependencies = prog['dependencies']
-	except KeyError:
-		#property not required
-		pass
-
-	if dependencies:
-		for d in dependencies:
-			if enabled(d):
-				if jobname not in allDependencies:
-					allDependencies[jobname] = []
-				allDependencies[jobname].extend(dependencies)
 
 	job.setCmd(cmd)
 
@@ -300,6 +331,50 @@ def makeCmd(programName,prog):
 
 	job.write() #closes the file too
 
+def processAnalysis(analysisConf):
+	#check if output direcories are defined, and deal with these first, because it's allowed for
+	# the JSON resource dict called 'outfiles' to reference variables in the 'outdirs' JSON resource dict.
+	# As a result, any keys in the outdirs objecdt will be added to the environment. Note that the keys in the outfiles
+	# object will also be added to the environment.  These two objects are the only cases where  global resources can be defined outside of the "resources" object.
+	# This is also the only time in the code that I allow a JSON resource to be able to reference other JSON resources.
+	# 
+	outdirs = {}
+	try:
+		outdirs = analysisConf['outdirs']
+	except KeyError:
+		pass
+	if outdirs:
+		expandVars(outdirs)
+		for key in outdirs:
+			path = outdirs[key]
+			if not os.path.exists(path):
+				os.mkdir(path)
+		addToEnvironment(dico=outdirs)
+		analysisConf.pop('outdirs')
+
+	outfiles = {}
+	try:
+		outfiles = analysisConf['outfiles']
+	except KeyError:
+		pass
+	if outfiles:
+		expandVars(outfiles)
+		addToEnvironment(dico=outfiles)
+		analysisConf.pop('outfiles')
+
+	qsubDico = {}
+	try:
+		qsubDico = analysisConf['qsub']	
+	except KeyError:
+		pass
+	for i in globalQsub:
+		if i not in qsubDico: #don't overwite!
+			qsubDico[i] = globalQsub[i]
+	expandVars(analysisConf) #replace resoruce variables with their resource values
+	makeCmd(analysis,analysisConf)
+
+
+
 
 coreQsubArgs = ["time","mem","slots","pe","host","queue", "project","outdir","-e","-o","cwd","name"]
 
@@ -361,8 +436,6 @@ try:
 except KeyError:
 	pass
 
-
-
 expandVars(jsonResources)
 addToEnvironment(dico=jsonResources)	
 
@@ -374,57 +447,40 @@ except KeyError:
 ##I add outdir to globalQsub last to make sure that it's not overwritten by jsonResources
 globalQsub['outdir'] = outdir
 
+
+#create a dict with each analysis name in it as the key, and value i a list.
+# even analyses with not dependencies will appear in the dict, and have the empty list.
 allDependencies = {}
+analyses = getAnalyses() #only retrieves enabled analyses
+for analysis in analyses:
+	#getDependencies() only retrieves enabled dependencies
+	dependencies = getDependencies(jconf['analyses'][analysis]) 
+	allDependencies[analysis] = []
+	if dependencies:
+		for d in dependencies:
+			allDependencies[analysis].append(d)
+
+#create a copy of the allDepencencies dict so that I can use it to write out all
+# dependencies in the sjm file. The original dict will be deleted (key-popped) bit by bit
+# as I process the analyses.
+allDependencies_bak = copy.deepcopy(allDependencies)
+checkCircDeps(allDependencies)
+
+
+analysisNameDico = {}
+for i in range(len(analyses)):
+	analysisNameDico[analyses[i]] = 1
+while analysisNameDico:
+	for analysis in analysisNameDico.keys():
+		if allDependencies[analysis]:
+			continue
+		print("\n")
+		print("Processing analysis {analysis}".format(analysis=analysis))
+		processAnalysis(jconf['analyses'][analysis])
+		analysisNameDico.pop(analysis)
+		rmDependency(analysis,allDependencies)
 	
-for programName in jconf['analyses']:
-#	print (jconf['analyses'][programName])
-	pdico = jconf['analyses'][programName]
-	enable = pdico['enable']
-	if not enable:
-		continue
-
-	#check if output direcories are defined, and deal with these first, because it's allowed for
-	# the JSON resource dict called 'outfiles' to reference variables in the 'outdirs' JSON resource dict.
-	# As a result, any keys in the outdirs objecdt will be added to the environment. Note that the keys in the outfiles
-	# object will also be added to the environment.  These two objects are the only cases where  global resources can be defined outside of the "resources" object.
-	# This is also the only time in the code that I allow a JSON resource to be able to reference other JSON resources.
-	# 
-	outdirs = {}
-	try:
-		outdirs = pdico['outdirs']
-	except KeyError:
-		pass
-	if outdirs:
-		expandVars(outdirs)
-		for key in outdirs:
-			path = outdirs[key]
-			if not os.path.exists(path):
-				os.mkdir(path)
-		addToEnvironment(dico=outdirs)
-		pdico.pop('outdirs')
-
-	outfiles = {}
-	try:
-		outfiles = pdico['outfiles']
-	except KeyError:
-		pass
-	if outfiles:
-		expandVars(outfiles)
-		addToEnvironment(dico=outfiles)
-		pdico.pop('outfiles')
-
-	qsubDico = {}
-	try:
-		qsubDico = pdico['qsub']	
-	except KeyError:
-		pass
-	for i in globalQsub:
-		if i not in qsubDico: #don't overwite!
-			qsubDico[i] = globalQsub[i]
-	expandVars(pdico) #replace resoruce variables with their resource values
-	makeCmd(programName,pdico)
-	
-sjm_writer.writeDependencies(allDependencies,sjmfile)
+sjm_writer.writeDependencies(allDependencies_bak,sjmfile)
 
 if run:
 	if args. wait:
