@@ -1,0 +1,201 @@
+{ 
+
+	"resources": {
+		"reference": "/srv/gs1/projects/scg/Genomes/H_sapiens/hg19_male/BWA/hg19_male.fa",
+		"dbsnp": "/srv/gs1/projects/scg/Resources/GATK/hg19-3.0/dbsnp_138.hg19.vcf",
+		"GATK": "/srv/gs1/software/gatk/gatk-3.0/GenomeAnalysisTK-3.0-0/",
+		"PICARD": "/srv/gs1/software/picard-tools/1.111",
+		"rModule": "r",
+		"javaModule": "java/latest",
+		"bwaModule": "bwa/0.5.10-trimread",
+		"samtoolsModule": "samtools/0.1.19",
+		"bwaMaxNumDiff": 2,
+
+		"qsub": {
+				"-M": "nathankw@stanford.edu",
+				"-m": "a",
+				"-A": "seq_center",
+				"-R": "y",
+		}
+	},
+	
+	"analyses": {
+
+		"bwa_aln": {
+			"program": "bwa aln",
+			"enable": 1,
+			"modules": ["${bwaModule}"],
+			"inputFormat": "fastq",
+
+			"outfiles": {
+				"bwa_aln_out": "$(basename ${fastq%%.*} ).sai"
+			},
+
+			"qsub": {
+				"mem": "6G"
+			},
+		
+			"params": {
+				"-t": 4,
+				"-n": "$bwaMaxNumDiff"
+			},
+		
+			"args": ["$reference","$fastq",">","$bwa_aln_out"]
+		},
+
+		"samse": {
+			"program": "bwa samse",
+			"enable": 1,
+			"modules": ["${bwaModule}"],
+			"inputFormat": "fastq",
+
+			"outfiles": {
+				"samse_out": "$(basename ${fastq%%.*}).sam"
+			},
+
+			"dependencies": ["bwa_aln"],
+			
+			"qsub": {
+				"slots": 1,
+				"mem": "6G"
+			},
+
+			"args": ["$reference","$bwa_aln_out","$fastq",">","$samse_out"]
+		},
+
+    "sam2Bam": {
+			"program": "samtools view",
+      "enable": 1,
+      "modules": ["${samtoolsModule}"],
+      "inputFormat": "sam",
+
+			"outfiles": {
+				"sam2Bam_out": "$(basename ${fastq%%.*}).bam"
+			},
+
+			"dependencies": ["samse"],
+    
+      "qsub": {
+        "slots": 1,
+        "mem": "4G"
+      },  
+    
+      "params": {
+				"-Shb": ""
+			},
+
+			"args": ["$samse_out",">","$sam2Bam_out"]
+		},
+
+		"cleanBam": {
+			"enable": 1,
+			"modules": ["${javaModule}"],
+			"jar": "${PICARD}/CleanSam.jar",
+			"javavm": "-Xmx4G",
+			"inputFormat": "bam",
+
+			"outfiles": {
+				"cleanBam_out": "$(basename ${fastq%%.*}).clean.bam"
+			},
+
+			"dependencies": ["sam2Bam"],
+
+			"qsub": {
+				"name": "cleanBam",
+				"slots": 1,
+				"mem": "8G"
+			},
+
+			"params": {
+				"INPUT=": "$sam2Bam_out",
+				"OUTPUT=": "$cleanBam_out"
+			}
+		},
+
+		"renameCleanBam": {
+				"enable": 1,
+				"program": "mv",
+				"dependencies": ["cleanBam"],
+
+				"outfiles": {
+					"renameCleanBam_out": "$(basename ${fastq%%.*}).bam"
+				},
+
+				"qsub": {
+					"name": "renamecleanBam",
+					"slots": 1
+				},
+			
+				"args": ["$cleanBam_out","$renameCleanBam_out"]
+		},
+
+    "sortBam": {
+      "enable": 1,
+      "modules": ["$javaModule"],
+      "jar": "${PICARD}/SortSam.jar",
+      "javavm": "-Xmx4G",
+      "inputFormat": "bam",
+
+			"outfiles": {
+				"sortBam_out": "$(basename ${fastq%%.*}).coordSorted.bam"
+			},
+
+			"dependencies": ["renameCleanBam"],
+  
+      "qsub": {
+        "name": "SortBam",
+        "slots": 1,
+        "mem": "16G"
+      },  
+  
+      "params": {
+        "INPUT=": "$renameCleanBam_out",
+				"OUTPUT=": "$sortBam_out",
+				"SORT_ORDER=": "coordinate"
+      }
+		},
+
+		"renameSortBam": {
+				"enable": 1,
+				"program": "mv",
+
+				"outfiles": {
+					"renameSortBam_out": "$(basename ${fastq%%.*}).bam"
+				},
+
+				"dependencies": ["sortBam"],
+
+				"qsub": {
+					"name": "renameSortBam",
+					"slots": 1
+				},
+			
+				"args": ["$sortBam_out","$renameSortBam_out"]
+		},
+
+    "indexBam": {
+      "enable": 1,
+      "modules": ["$javaModule"],
+      "jar": "${PICARD}/BuildBamIndex.jar",
+      "javavm": "-Xmx4G",
+      "inputFormat": "bam",
+
+			"outfiles": {
+				"indexBam_out": "$(basename ${fastq%%.*}).bai"
+			},
+
+			"dependencies": ["renameSortBam"],
+  
+      "qsub": {
+        "name": "BuildBamIndex",
+        "slots": 1,
+        "mem": "8G"
+      },  
+  
+      "params": {
+        "INPUT=": "$renameSortBam_out",
+				"OUTPUT=": "$indexBam_out"
+      }  
+		}
+	}
+}

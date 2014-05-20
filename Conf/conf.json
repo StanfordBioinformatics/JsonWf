@@ -12,7 +12,7 @@
 	
 		"qsub": {
 			"-M": "nathankw@stanford.edu",
-			"-m": "ba",
+			"-m": "a",
 			"-A": "clinical-services",
 			"-R": "y"
 		}
