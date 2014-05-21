@@ -53,12 +53,72 @@ def rmDependency(dependency,allDependencies):
 		if index >=0:
 			allDependencies[analysis].pop(index)
 
-def getAnalyses():
-	analyses = []
+def getDescription(analysis):
+	"""
+	Function : Retrieves the 'description' of an analysis, if this keyword is present. This is a keyword defined in the JSON Schema draft 4.
+	"""
+	try:
+		desc = jconf['analyses'][analysis]['description']
+	except KeyError:
+		return None
+	return desc
+
+def getTitle(analysis):
+	"""
+	Function : Retrieves the 'title' of an analysis, if this keyword is present. This is a keyword defined in the JSON Schema draft 4.
+	"""
+	try:
+		title = jconf['analyses'][analysis]['title']
+	except KeyError:
+		return None
+	return title
+
+def getDescriptionOrTitle(analysis):
+	"""
+	Function : Given an analysis name, tries to return it's description if the 'description' keyword is present.
+						 If not, then tries to return it's title if the 'title' keyword is present. If neither is present,
+						 returns the None object.
+	"""
+	desc = getDescription(analysis)	
+	if desc:
+		return desc
+	title = getTitle(analysis)
+	return title
+
+def getAllAnalyses():
+	"""
+	Function : Returns a dict of all analyses present in the JSON conf file as keys and as values as a string being the description
+						 if the 'description' keyword is present, else the title if the 'title' keyword is present, else the None object.
+	"""
+	dico = {}
+	for analysis in jconf['analyses']:
+		val = getDescriptionOrTitle(analysis)
+		dico[analysis] = val
+	return dico
+
+def getDisabledAnalyses():
+	"""
+	Function : Returns a dict of all disabled analyses present in the JSON conf file as keys and as values as a string being the description
+						 if the 'description' keyword is present, else the title if the 'title' keyword is present, else the None object.
+	"""
+	dico = {}
+	for analysis in jconf['analyses']:
+		if not enabled(analysis):
+			val = getDescriptionOrTitle(analysis)
+			dico[analysis] = val
+	return dico
+
+def getEnabledAnalyses():
+	"""
+	Function : Returns a dict of all enabled analyses present in the JSON conf file as keys and as values as a string being the description
+						 if the 'description' keyword is present, else the title if the 'title' keyword is present, else the None object.
+	"""
+	dico = {}
 	for analysis in jconf['analyses']:
 		if enabled(analysis):
-			analyses.append(analysis)
-	return analyses
+			val = getDescriptionOrTitle(analysis)
+			dico[analysis] = val
+	return dico
 
 def addToEnvironment(key=False,value=False,dico={}):
 	"""
@@ -378,7 +438,7 @@ def processAnalysis(analysisConf):
 
 coreQsubArgs = ["time","mem","slots","pe","host","queue", "project","outdir","-e","-o","cwd","name"]
 
-description = "Given a JSON configuration file that abides by the packaged schema.json file, this program will validate the conf file, then build an SJM file. Variable substitution is also supported, whereby any value in the conf file that begins with a '$' may be replaced by a global resource that is specified either on the command-line (CL) as an argument, or in the conf file itself. In the conf file, resources include the global resource and qsub objects.  CL set resources override conf file resources."
+description = "Given a JSON configuration file that abides by the packaged schema.json file, this program will validate the conf file, then build an SJM file. Variable substitution is also supported, whereby any value in the conf file that begins with a '$' may be replaced by a global resource that is specified either on the command-line (CL) as an argument, or in the conf file itself. In the conf file, resources include the global resource and qsub objects.  CL set resources override conf file resources. For help with validating your JSON conf file, copy and past it into the online JSON Schema Validator at http://jsonformatter.curiousconcept.com/."
 
 parser = ArgumentParser(description=description)
 parser.add_argument('--schema',default="/srv/gs1/software/gbsc/kwality/1.0/schema.json", help="The JSON schema that will be used to validate the JSON configuration file. Default is %(default)s.")
@@ -389,10 +449,47 @@ parser.add_argument('-s','--sjmfile',required=True,help="Output SJM file. Append
 parser.add_argument('-v','--verbose',help="Print extra details to stdout.")
 parser.add_argument('--run',action="store_true",help="Don't just generate the sjm file, run it too. By default, the program does not wait for the sjm job to complete; see --wait.")
 parser.add_argument('--wait',action="store_true",help="When --run is specified, indicates that the script should wait for the sjm job to complete before exiting.")
+parser.add_argument('--analyses',action="store_true",help="Display a list of availble analyses present in --conf-file.")
+parser.add_argument('--enabled',action="store_true",help="Display a list of enabled analyses present in --conf-file.")
+parser.add_argument('--disabled',action="store_true",help="Display a list of disabled analyses present in --conf-file.")
+
+def outputAnalyses(analysisDict):
+	"""
+	Function : Prints to stdout all analyses in the passed in dict, one per line.
+	"""
+	print("{name:<30}{desc}".format(name="Name:",desc="Description:"))
+	for i in analysisDict:
+		print("{analysis:<30}{desc}".format(analysis=i,desc=analysisDict[i]))
 
 args = parser.parse_args()
 if args.wait and not args.run:
 	parser.error("Argument --wait cannot be specified w/o --run")
+
+cfh = open(args.conf_file,'r')
+jconf = json.load(cfh)
+rmComments(jconf)
+schema = args.schema
+sfh = open(schema,'r')
+jschema = json.load(sfh)
+jsonschema.validate(jconf,jschema)
+
+allAnalyses = getAllAnalyses()
+numAllAnalyses = len(allAnalyses)
+if args.analyses:
+	print("All Analyses ({}):".format(numAllAnalyses))
+	outputAnalyses(allAnalyses)
+	parser.exit()
+elif args.enabled:
+	ea = getEnabledAnalyses()
+	print("Enabled Analyses ({0}/{1}):".format(len(ea),numAllAnalyses))
+	outputAnalyses(ea)
+	parser.exit()
+elif args.disabled:
+	da = getDisabledAnalyses()
+	print("Diabled Analyses ({0}/{1}):".format(len(da),numAllAnalyses))
+	outputAnalyses(da)
+	parser.exit()
+
 
 resdico = {} #resource dict
 
@@ -410,17 +507,6 @@ run = args.run
 sjmfile = args.sjmfile
 if os.path.exists(sjmfile):
 	os.remove(sjmfile)
-
-cfh = open(args.conf_file,'r')
-jconf = json.load(cfh)
-
-rmComments(jconf)
-
-schema = args.schema
-sfh = open(schema,'r')
-jschema = json.load(sfh)
-
-jsonschema.validate(jconf,jschema)
 
 resources = args.resources
 if resources:
@@ -451,7 +537,7 @@ globalQsub['outdir'] = outdir
 #create a dict with each analysis name in it as the key, and value i a list.
 # even analyses with not dependencies will appear in the dict, and have the empty list.
 allDependencies = {}
-analyses = getAnalyses() #only retrieves enabled analyses
+analyses = getEnabledAnalyses() #only retrieves enabled analyses
 for analysis in analyses:
 	#getDependencies() only retrieves enabled dependencies
 	dependencies = getDependencies(jconf['analyses'][analysis]) 

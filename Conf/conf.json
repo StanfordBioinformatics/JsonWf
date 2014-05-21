@@ -21,6 +21,7 @@
 	"analyses": {
 
 		"fastqc": {
+			"description": "FASTQC tool from Babraham Bioinformatics",
 			"program": "fastqc",
 			"enable": 1,
 			"modules": ["fastqc/0.10.1"],
@@ -44,6 +45,7 @@
 		},
 
 		"flagstat": {
+			"description": "samtools flagstat",
 			"program": "samtools flagstat",
 			"enable": 1,
 			"modules": ["${samtoolsModule}"],
@@ -67,6 +69,7 @@
 		},
 
 		"DepthOfCoverage": {
+			"description": "GATK's DepthOfCoverage",
 			"enable": 1,
 			"modules": ["${javaModule}"],
 			"jar": "${gatk}/GenomeAnalysisTK.jar",
@@ -97,6 +100,7 @@
 		},
 
 		"Concordance": {
+			"description": "GATK's SelectVariants; outputs VCF file containing concordant records",
 			"enable": 1,
 			"modules": ["${javaModule}"],
 			"jar": "${gatk}/GenomeAnalysisTK.jar",
@@ -129,6 +133,7 @@
 		},
 
 		"Discordance": {
+			"description": "GATK's SelectVariants; outputs VCF file containing discordant records",
 			"enable": 1,
 			"modules": ["${javaModule}"],
 			"jar": "${gatk}/GenomeAnalysisTK.jar",
@@ -161,6 +166,7 @@
 		},
 
 		"VariantEval": {
+			"description": "GATK's VariantEval",
 			"enable": 1,
 			"modules": ["${javaModule}"],
 			"jar": "${gatk}/GenomeAnalysisTK.jar",
@@ -197,6 +203,7 @@
 		},
 
 		"GenotypeConcordance": {
+			"description": "GATK's GenotypeConcordance",
 			"enable": 1,
 			"modules": ["${javaModule}"],
 			"jar": "${gatk}/GenomeAnalysisTK.jar",
@@ -227,6 +234,7 @@
 		},
 
 		"CollectAlignmentSummaryMetrics": {
+			"description": "Picard's CollectAlignmentSummaryMetrics",
 			"enable": 1,
 			"modules": ["${javaModule}"],
 			"jar": "${picard}/CollectAlignmentSummaryMetrics.jar",
@@ -257,6 +265,7 @@
 		},
 
 		"CollectGcBiasMetrics": {
+			"description": "Picards CollectGcBiasMetrics",
 			"enable": 1,
 			"modules": ["${javaModule}","${rModule}"],
 			"jar": "${picard}/CollectGcBiasMetrics.jar",
@@ -288,6 +297,7 @@
 		},
 
 		"CollectInsertSizeMetrics": {
+			"description": "Picard's CollectInsertSizeMetrics",
 			"enable": 1,
 			"modules": ["${javaModule}","${rModule}"],
 			"jar": "${picard}/CollectInsertSizeMetrics.jar",
@@ -319,6 +329,7 @@
 		},
 
 		"MeanQualityByCycle": {
+			"description": "Picard's MeanQualityByCycle",
 			"enable": 1,
 			"modules": ["${javaModule}","${rModule}"],
 			"jar": "${picard}/MeanQualityByCycle.jar",
@@ -351,6 +362,7 @@
 		},
 
 		"QualityScoreDistribution": {
+			"description": "Picard's QualityScoreDistribution",
 			"enable": 1,
 			"modules": ["${javaModule}","${rModule}"],
 			"jar": "${picard}/QualityScoreDistribution.jar",
