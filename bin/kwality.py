@@ -533,7 +533,6 @@ except KeyError:
 ##I add outdir to globalQsub last to make sure that it's not overwritten by jsonResources
 globalQsub['outdir'] = outdir
 
-
 #create a dict with each analysis name in it as the key, and value i a list.
 # even analyses with not dependencies will appear in the dict, and have the empty list.
 allDependencies = {}
@@ -549,13 +548,13 @@ for analysis in analyses:
 #create a copy of the allDepencencies dict so that I can use it to write out all
 # dependencies in the sjm file. The original dict will be deleted (key-popped) bit by bit
 # as I process the analyses.
-allDependencies_bak = copy.deepcopy(allDependencies)
+allDependencies_orig = copy.deepcopy(allDependencies)
 checkCircDeps(allDependencies)
 
 
 analysisNameDico = {}
-for i in range(len(analyses)):
-	analysisNameDico[analyses[i]] = 1
+for i in analyses:
+	analysisNameDico[i] = 1
 while analysisNameDico:
 	for analysis in analysisNameDico.keys():
 		if allDependencies[analysis]:
@@ -566,7 +565,7 @@ while analysisNameDico:
 		analysisNameDico.pop(analysis)
 		rmDependency(analysis,allDependencies)
 	
-sjm_writer.writeDependencies(allDependencies_bak,sjmfile)
+sjm_writer.writeDependencies(allDependencies_orig,sjmfile)
 
 if run:
 	if args. wait:

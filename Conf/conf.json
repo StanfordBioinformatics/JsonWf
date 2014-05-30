@@ -277,7 +277,9 @@
 			},
 
 			"outfiles": {
-				"f_collectGcBiasMetrics": "${d_collectGcBiasMetrics}/gcBiasMetrics.txt"
+				"f_collectGcBiasMetrics": "${d_collectGcBiasMetrics}/gcBiasMetrics.txt",
+				"f_collectGcBiasMetrics_summary": "${d_collectGcBiasMetrics}/gcBiasMetrics_summary.txt",
+				"f_collectGcBiasMetrics_chart": "${d_collectGcBiasMetrics}/gcBiasMetrics_chart.pdf"
 			},
 			
 			"qsub": {
@@ -291,8 +293,8 @@
 				"INPUT=": "${bam}",
 				"OUTPUT=": "${f_collectGcBiasMetrics}",
 				"REFERENCE_SEQUENCE=": "${reference}",
-				"SUMMARY_OUTPUT=": "gcBiasMetrics_summary.txt",
-				"CHART_OUTPUT=": "gcBiasMetrics_chart.pdf"
+				"SUMMARY_OUTPUT=": "${f_collectGcBiasMetrics_summary}",
+				"CHART_OUTPUT=": "${f_collectGcBiasMetrics_chart}"
 			}
 		},
 
@@ -341,7 +343,8 @@
 			},
 		
 			"outfiles": {
-				"f_meanQualityByCycle": "${d_meanQualityByCycle}/meanQualitybyCycle.txt"
+				"f_meanQualityByCycle": "${d_meanQualityByCycle}/meanQuaByCycle.txt",
+				"f_meanQualityByCycle_pdf": "${d_meanQualityByCycle}/meanQualByCycle.pdf"
 			},
 			
 			"qsub": {
@@ -357,7 +360,7 @@
 				"REFERENCE_SEQUENCE=": "${reference}",
 				"ALIGNED_READS_ONLY=": "true",
 				"PF_READS_ONLY=": "true",
-				"CHART_OUTPUT=": "meanQualityByCycle.pdf"
+				"CHART_OUTPUT=": "${f_meanQualityByCycle_pdf}"
 			}
 		},
 
@@ -374,7 +377,8 @@
 			},
 
 			"outfiles": {
-				"f_qualityScoreDistribution": "${d_qualityScoreDistribution}/qualityScoreDist.txt"
+				"f_qualityScoreDistribution": "${d_qualityScoreDistribution}/qualScoreDist.txt",
+				"f_qualityScoreDistribution_chart": "${d_qualityScoreDistribution}/qualScoreDist_chart.pdf"
 			},
 			
 			
@@ -391,7 +395,7 @@
 				"REFERENCE_SEQUENCE=": "${reference}",
 				"ALIGNED_READS_ONLY=": "true",
 				"PF_READS_ONLY=": "true",
-				"CHART_OUTPUT=": "qualityScoreDistribution.pdf"
+				"CHART_OUTPUT=": "${f_qualityScoreDistribution_chart}"
 			}
 		}
 	}

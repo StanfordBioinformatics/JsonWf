@@ -14,7 +14,7 @@
 		"qsub": {
 				"-M": "nathankw@stanford.edu",
 				"-m": "a",
-				"-A": "seq_center",
+				"-A": "chipseq_scoring",
 				"-R": "y"
 		}
 	},
