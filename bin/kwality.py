@@ -442,10 +442,10 @@ description = "Given a JSON configuration file that abides by the packaged schem
 
 parser = ArgumentParser(description=description)
 parser.add_argument('--schema',default="/srv/gs1/software/gbsc/kwality/1.0/schema.json", help="The JSON schema that will be used to validate the JSON configuration file. Default is %(default)s.")
-parser.add_argument('--outdir',required=True,help="The directory to output all result files. Can be a relative or absolute directory path. Will be created if it does't exist already. Will be added as a global resource.")
+parser.add_argument('--outdir',help="(Required when none of --analyses, --enabled, and --disabled are specified) The directory to output all result files. Can be a relative or absolute directory path. Will be created if it does't exist already. Will be added as a global resource.")
 parser.add_argument('-c','--conf-file',required=True,help="Configuration file in JSON format.")
 parser.add_argument('resources',nargs="*",help="One or more space-delimited key=value resources that can override or append to the keys of the resoruce object in the JSON conf file. The value of the --outdir option will automatically be added here with the variable name 'outdir'.")
-parser.add_argument('-s','--sjmfile',required=True,help="Output SJM file. Appends to it by default.")
+parser.add_argument('-s','--sjmfile',help="(Required when none of --analyses, --enabled, and --disabled are specified) Output SJM file. Appends to it by default.")
 parser.add_argument('-v','--verbose',help="Print extra details to stdout.")
 parser.add_argument('--run',action="store_true",help="Don't just generate the sjm file, run it too. By default, the program does not wait for the sjm job to complete; see --wait.")
 parser.add_argument('--wait',action="store_true",help="When --run is specified, indicates that the script should wait for the sjm job to complete before exiting.")
@@ -457,13 +457,19 @@ def outputAnalyses(analysisDict):
 	"""
 	Function : Prints to stdout all analyses in the passed in dict, one per line.
 	"""
-	print("{name:<30}{desc}".format(name="Name:",desc="Description:"))
+	print("{name:<35}{desc}".format(name="Name:",desc="Description:"))
 	for i in analysisDict:
-		print("{analysis:<30}{desc}".format(analysis=i,desc=analysisDict[i]))
+		print("{analysis:<35}{desc}".format(analysis=i,desc=analysisDict[i]))
 
 args = parser.parse_args()
 if args.wait and not args.run:
 	parser.error("Argument --wait cannot be specified w/o --run")
+
+if not args.analyses and not args.enabled and not args.disabled:
+	if not args.outdir:
+		parser.error("You must supply the --outdir argument!")
+	if not args.sjmfile:
+		parser.error("You must supply the --sjmfile argument!")
 
 cfh = open(args.conf_file,'r')
 jconf = json.load(cfh)

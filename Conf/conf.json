@@ -70,7 +70,7 @@
 
 		"DepthOfCoverage": {
 			"description": "GATK's DepthOfCoverage",
-			"enable": 1,
+			"enable": 0,
 			"modules": ["${javaModule}"],
 			"jar": "${gatk}/GenomeAnalysisTK.jar",
 			"javavm": "-Xmx5G",
