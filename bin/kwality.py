@@ -140,7 +140,7 @@ def addToEnvironment(key=False,value=False,dico={}):
 			resdico[key] = value
 			os.environ[key] = value
 		else:
-			raise Exception("Found duplicate key {key} in your resources")
+			raise Exception("Found duplicate key {key} in your resources".format(key=key))
 	
 	for key in dico:
 		value = dico[key]
@@ -152,7 +152,7 @@ def addToEnvironment(key=False,value=False,dico={}):
 			resdico[key] = value
 			os.environ[key] = value
 		else:
-			raise Exception("Found duplicate key {key} in your resources")
+			raise Exception("Found duplicate key {key} in your resources".format(key=key))
 
 def enabled(analysis):
 	"""
@@ -566,7 +566,7 @@ while analysisNameDico:
 		if allDependencies[analysis]:
 			continue
 		print("\n")
-		print("Processing analysis {analysis}".format(analysis=analysis))
+		print("Processing Analysis {analysis}".format(analysis=analysis))
 		processAnalysis(jconf['analyses'][analysis])
 		analysisNameDico.pop(analysis)
 		rmDependency(analysis,allDependencies)
