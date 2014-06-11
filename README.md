@@ -18,7 +18,7 @@ Finally, each analysis can have object "outdirs", which specified output directo
 
 Comments - Any key prefixed with a "#" will be ignored.  The "#" must be within the quotation marks of the key.
 
-2) Analyses - Multiple analyses can be defined within the top-level "analyses"
+Analyses - Multiple analyses can be defined within the top-level "analyses"
 object.  An analysis is defined as an executable that can have command-line options and
 arguments. Dependencies on other analyses can be specified. Each analysis object may contain a
 "params" object, an "args" object, and a "qsub" object.  The params object
