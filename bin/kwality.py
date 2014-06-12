@@ -462,7 +462,7 @@ def outputAnalyses(analysisDict):
 	Function : Prints to stdout all analyses in the passed in dict, one per line.
 	"""
 	print("{name:<35}{desc}".format(name="Name:",desc="Description:"))
-	for i in analysisDict:
+	for i in sorted(analysisDict):
 		print("{analysis:<35}{desc}".format(analysis=i,desc=analysisDict[i]))
 
 args = parser.parse_args()
