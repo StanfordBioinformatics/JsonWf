@@ -56,9 +56,10 @@ def rmDependency(dependency,allDependencies):
 def getDescription(analysis):
 	"""
 	Function : Retrieves the 'description' of an analysis, if this keyword is present. This is a keyword defined in the JSON Schema draft 4.
+	Args     : analysis - str. The name of an analysis.
 	"""
 	try:
-		desc = jconf['analyses'][analysis]['description']
+		desc = analysisDict[analysis]['description']
 	except KeyError:
 		return None
 	return desc
@@ -66,9 +67,10 @@ def getDescription(analysis):
 def getTitle(analysis):
 	"""
 	Function : Retrieves the 'title' of an analysis, if this keyword is present. This is a keyword defined in the JSON Schema draft 4.
+	Args     : analysis - str. The name of analysis.
 	"""
 	try:
-		title = jconf['analyses'][analysis]['title']
+		title = analysisDict[analysis]['title']
 	except KeyError:
 		return None
 	return title
@@ -91,7 +93,7 @@ def getAllAnalyses():
 						 if the 'description' keyword is present, else the title if the 'title' keyword is present, else the None object.
 	"""
 	dico = {}
-	for analysis in jconf['analyses']:
+	for analysis in analysisDict:
 		val = getDescriptionOrTitle(analysis)
 		dico[analysis] = val
 	return dico
@@ -102,7 +104,7 @@ def getDisabledAnalyses():
 						 if the 'description' keyword is present, else the title if the 'title' keyword is present, else the None object.
 	"""
 	dico = {}
-	for analysis in jconf['analyses']:
+	for analysis in analysisDict:
 		if not enabled(analysis):
 			val = getDescriptionOrTitle(analysis)
 			dico[analysis] = val
@@ -114,7 +116,7 @@ def getEnabledAnalyses():
 						 if the 'description' keyword is present, else the title if the 'title' keyword is present, else the None object.
 	"""
 	dico = {}
-	for analysis in jconf['analyses']:
+	for analysis in analysisDict: 
 		if enabled(analysis):
 			val = getDescriptionOrTitle(analysis)
 			dico[analysis] = val
@@ -159,7 +161,7 @@ def enabled(analysis):
 	Function : Checks whether an analysis is enabled or not.
 	Args     : analysis - str. An analysis name.
 	"""
-	return jconf['analyses'][analysis]['enable']
+	return analysisDict[analysis]['enable']
 
 def rmComments(dico):
 	"""
@@ -404,12 +406,13 @@ def processAnalysis(analysisConf):
 	except KeyError:
 		pass
 	if outdirs:
-		expandVars(outdirs)
-		for key in outdirs:
-			path = outdirs[key]
-			if not os.path.exists(path):
-				os.mkdir(path)
-		addToEnvironment(dico=outdirs)
+		for i in outdirs:
+			expandVars(i)
+			for key in i:
+				path = i[key]
+				if not os.path.exists(path):
+					os.mkdir(path)
+			addToEnvironment(dico=i)
 		analysisConf.pop('outdirs')
 
 	outfiles = {}
@@ -418,8 +421,9 @@ def processAnalysis(analysisConf):
 	except KeyError:
 		pass
 	if outfiles:
-		expandVars(outfiles)
-		addToEnvironment(dico=outfiles)
+		for i in outfiles:
+			expandVars(i)
+			addToEnvironment(dico=i)
 		analysisConf.pop('outfiles')
 
 	qsubDico = {}
@@ -445,7 +449,7 @@ parser.add_argument('--schema',default="/srv/gs1/software/gbsc/kwality/1.0/schem
 parser.add_argument('--outdir',help="(Required when none of --analyses, --enabled, and --disabled are specified) The directory to output all result files. Can be a relative or absolute directory path. Will be created if it does't exist already. Will be added as a global resource.")
 parser.add_argument('-c','--conf-file',required=True,help="Configuration file in JSON format.")
 parser.add_argument('resources',nargs="*",help="One or more space-delimited key=value resources that can override or append to the keys of the resoruce object in the JSON conf file. The value of the --outdir option will automatically be added here with the variable name 'outdir'.")
-parser.add_argument('-s','--sjmfile',help="(Required when none of --analyses, --enabled, and --disabled are specified) Output SJM file. Appends to it by default.")
+parser.add_argument('-s','--sjmfile',help="(Required when none of --analyses, --enabled, and --disabled are specified) Output SJM file name (w/o directory path). The sjm file will be created in the directory passed to --outdir. If the file already exists, it will be appended to.")
 parser.add_argument('-v','--verbose',help="Print extra details to stdout.")
 parser.add_argument('--run',action="store_true",help="Don't just generate the sjm file, run it too. By default, the program does not wait for the sjm job to complete; see --wait.")
 parser.add_argument('--wait',action="store_true",help="When --run is specified, indicates that the script should wait for the sjm job to complete before exiting.")
@@ -479,6 +483,16 @@ sfh = open(schema,'r')
 jschema = json.load(sfh)
 jsonschema.validate(jconf,jschema)
 
+ald = jconf['analyses'] # analysis list dicts - a list of analyses (dicts)
+analysisNames = [x['analysis'] for x in ald]
+analysisDict = {}
+count = -1
+for name in analysisNames:
+	count += 1
+	if name in analysisDict:
+		raise ValueError("Duplicate analysis name {}".format(name))
+	analysisDict[name] = ald[count]
+
 allAnalyses = getAllAnalyses()
 numAllAnalyses = len(allAnalyses)
 if args.analyses:
@@ -510,7 +524,8 @@ if not os.path.exists(logdir):
 
 
 run = args.run
-sjmfile = args.sjmfile
+sjmfile = os.path.basename(args.sjmfile)
+sjmfile = os.path.join(outdir,sjmfile)
 if os.path.exists(sjmfile):
 	os.remove(sjmfile)
 
@@ -541,11 +556,11 @@ globalQsub['outdir'] = outdir
 
 #create a dict with each analysis name in it as the key, and value i a list.
 # even analyses with not dependencies will appear in the dict, and have the empty list.
-allDependencies = {}
 analyses = getEnabledAnalyses() #only retrieves enabled analyses
+allDependencies = {}
 for analysis in analyses:
 	#getDependencies() only retrieves enabled dependencies
-	dependencies = getDependencies(jconf['analyses'][analysis]) 
+	dependencies = getDependencies(analysisDict[analysis]) 
 	allDependencies[analysis] = []
 	if dependencies:
 		for d in dependencies:
@@ -567,7 +582,7 @@ while analysisNameDico:
 			continue
 		print("\n")
 		print("Processing Analysis {analysis}".format(analysis=analysis))
-		processAnalysis(jconf['analyses'][analysis])
+		processAnalysis(analysisDict[analysis])
 		analysisNameDico.pop(analysis)
 		rmDependency(analysis,allDependencies)
 	

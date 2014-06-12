@@ -18,18 +18,18 @@
 		}
 	},
 	
-	"analyses": {
-
-		"fastqc": {
+	"analyses": [
+		{
+		  "analysis": "fastqc",
 			"description": "FASTQC tool from Babraham Bioinformatics",
 			"program": "fastqc",
 			"enable": 1,
 			"modules": ["fastqc/0.10.1"],
 			"inputFormat": "bam",
 
-			"outdirs": {
-				"d_fastqc": "${outdir}/fastqc"
-			},
+			"outdirs": [
+				{"d_fastqc": "${outdir}/fastqc"}
+			],
 
 			"qsub": {
 				"name": "FastQC",
@@ -44,20 +44,21 @@
 			"args": ["${bam}"]
 		},
 
-		"flagstat": {
+		{
+			"analysis": "flagstat",
 			"description": "samtools flagstat",
 			"program": "samtools flagstat",
 			"enable": 1,
 			"modules": ["${samtoolsModule}"],
 			"inputFormat": "bam",
 
-			"outdirs": {
-				"d_flagstat": "${outdir}/flagstat"
-			},
+			"outdirs": [
+				{"d_flagstat": "${outdir}/flagstat"}
+			],
 
-			"outfiles": {
-				"f_flagstat": "${d_flagstat}/flagstat.txt"
-			},
+			"outfiles": [
+				{"f_flagstat": "${d_flagstat}/flagstat.txt"}
+			],
 
 			"qsub": {
 				"name": "flagstat",
@@ -68,7 +69,8 @@
 			"args": ["${bam}",">","${f_flagstat}"]
 		},
 
-		"DepthOfCoverage": {
+		{
+			"analysis": "DepthOfCoverage",
 			"description": "GATK's DepthOfCoverage",
 			"enable": 0,
 			"modules": ["${javaModule}"],
@@ -76,13 +78,13 @@
 			"javavm": "-Xmx5G",
 			"inputFormat": "bam",
 
-			"outdirs": {
-				"d_depthOfCoverage": "${outdir}/coverage"
-			},
+			"outdirs": [
+				{"d_depthOfCoverage": "${outdir}/coverage"}
+			],
 			
-			"outfiles": {
-				"f_depthOfCoverage": "${d_depthOfCoverage}/coverage"
-			},
+			"outfiles": [
+				{"f_depthOfCoverage": "${d_depthOfCoverage}/coverage"}
+			],
 					
 			"qsub": {
 				"name": "DepthOfCoverage",
@@ -99,7 +101,9 @@
 			}
 		},
 
-		"Concordance": {
+
+		{
+			"analysis": "Concordance",
 			"description": "GATK's SelectVariants; outputs VCF file containing concordant records",
 			"enable": 1,
 			"modules": ["${javaModule}"],
@@ -107,13 +111,13 @@
 			"javavm": "-Xmx2G",
 			"inputFormat": "vcf",
 
-			"outdirs": {
-				"d_concordance": "${outdir}/concordance"
-			},
+			"outdirs": [
+				{"d_concordance": "${outdir}/concordance"}
+			],
 
-			"outfiles": {
-				"f_concordance": "${d_concordance}/concordance.vcf"
-			},
+			"outfiles": [
+				{"f_concordance": "${d_concordance}/concordance.vcf"}
+			],
 
 			"qsub": {
 				"name": "SelectVariants_concordance",
@@ -132,7 +136,8 @@
 			}
 		},
 
-		"Discordance": {
+		{
+			"analysis": "Discordance",
 			"description": "GATK's SelectVariants; outputs VCF file containing discordant records",
 			"enable": 1,
 			"modules": ["${javaModule}"],
@@ -140,13 +145,13 @@
 			"javavm": "-Xmx2G",
 			"inputFormat": "vcf",
 
-			"outdirs": {
-				"d_discordance": "${outdir}/discordance"
-			},
+			"outdirs": [
+				{"d_discordance": "${outdir}/discordance"}
+			],
 
-			"outfiles": {
-				"f_discordance": "${d_discordance}/discordance.vcf"
-			},
+			"outfiles": [
+				{"f_discordance": "${d_discordance}/discordance.vcf"}
+			],
 
 			"qsub": {
 				"name": "SelectVariants_discordance",
@@ -164,8 +169,9 @@
 				"-o": "${f_discordance}"
 			}
 		},
-
-		"VariantEval": {
+	
+		{
+			"analysis": "VariantEval",
 			"description": "GATK's VariantEval",
 			"enable": 1,
 			"modules": ["${javaModule}"],
@@ -173,13 +179,13 @@
 			"javavm": "-Xmx2G",
 			"inputFormat": "vcf",
 
-			"outdirs": {
-				"d_variantEval": "${outdir}/variantEval"
-			},
+			"outdirs": [
+				{"d_variantEval": "${outdir}/variantEval"}
+			],
 
-			"outfiles": {
-				"f_variantEval": "${d_variantEval}/variantEval_metrics.txt"
-			},
+			"outfiles": [
+				{"f_variantEval": "${d_variantEval}/variantEval_metrics.txt"}
+			],
 
 			"qsub": {
 				"name": "VariantEval",
@@ -201,8 +207,9 @@
 				"--dbsnp": "${dbsnp}"
 			}
 		},
-
-		"GenotypeConcordance": {
+		
+		{
+			"analysis":	"GenotypeConcordance",
 			"description": "GATK's GenotypeConcordance",
 			"enable": 1,
 			"modules": ["${javaModule}"],
@@ -210,13 +217,13 @@
 			"javavm": "-Xmx2G",
 			"inputFormat": "vcf",
 
-			"outdirs": {
-				"d_genotypeConcordance": "${outdir}/gtConcordance"
-			},
+			"outdirs": [
+				{"d_genotypeConcordance": "${outdir}/gtConcordance"}
+			],
 
-			"outfiles": {
-				"f_genotypeConcordance": "${d_genotypeConcordance}/gtConcordance.txt"
-			},
+			"outfiles": [
+				{"f_genotypeConcordance": "${d_genotypeConcordance}/gtConcordance.txt"}
+			],
 
 			"qsub": {
 				"name": "GenotypeConcordance",
@@ -232,8 +239,9 @@
 				"--comp": "${dbsnp}"
 			}
 		},
-
-		"CollectAlignmentSummaryMetrics": {
+		
+		{
+			"analysis": "CollectAlignmentSummaryMetrics",
 			"description": "Picard's CollectAlignmentSummaryMetrics",
 			"enable": 1,
 			"modules": ["${javaModule}"],
@@ -241,13 +249,13 @@
 			"javavm": "-Xmx4G",
 			"inputFormat": "bam",
 
-			"outdirs": {
-				"d_collectAlignmentSummaryMetrics": "${outdir}/alnSumMetrics"
-			},
+			"outdirs": [
+				{"d_collectAlignmentSummaryMetrics": "${outdir}/alnSumMetrics"}
+			],
 			
-			"outfiles": {
-				"f_collectAlignmentSummaryMetrics": "${d_collectAlignmentSummaryMetrics}/alnSummaryMetrics.txt"
-			},
+			"outfiles": [
+				{"f_collectAlignmentSummaryMetrics": "${d_collectAlignmentSummaryMetrics}/alnSummaryMetrics.txt"}
+			],
 
 			"qsub": {
 				"name": "CollectAlignmentSummaryMetrics",
@@ -264,7 +272,8 @@
 			}
 		},
 
-		"CollectGcBiasMetrics": {
+		{
+			"analysis":	"CollectGcBiasMetrics",
 			"description": "Picards CollectGcBiasMetrics",
 			"enable": 1,
 			"modules": ["${javaModule}","${rModule}"],
@@ -272,15 +281,15 @@
 			"javavm": "-Xmx4G",
 			"inputFormat": "bam",
 
-			"outdirs": {
-				"d_collectGcBiasMetrics": "${outdir}/gcBiasMetrics"
-			},
+			"outdirs": [
+				{"d_collectGcBiasMetrics": "${outdir}/gcBiasMetrics"}
+			],
 
-			"outfiles": {
-				"f_collectGcBiasMetrics": "${d_collectGcBiasMetrics}/gcBiasMetrics.txt",
-				"f_collectGcBiasMetrics_summary": "${d_collectGcBiasMetrics}/gcBiasMetrics_summary.txt",
-				"f_collectGcBiasMetrics_chart": "${d_collectGcBiasMetrics}/gcBiasMetrics_chart.pdf"
-			},
+			"outfiles": [
+				{"f_collectGcBiasMetrics": "${d_collectGcBiasMetrics}/gcBiasMetrics.txt"},
+				{"f_collectGcBiasMetrics_summary": "${d_collectGcBiasMetrics}/gcBiasMetrics_summary.txt"},
+				{"f_collectGcBiasMetrics_chart": "${d_collectGcBiasMetrics}/gcBiasMetrics_chart.pdf"}
+			],
 			
 			"qsub": {
 				"name": "CollectGcBiasMetrics",
@@ -298,7 +307,8 @@
 			}
 		},
 
-		"CollectInsertSizeMetrics": {
+		{
+			"analysis": "CollectInsertSizeMetrics",
 			"description": "Picard's CollectInsertSizeMetrics",
 			"enable": 1,
 			"modules": ["${javaModule}","${rModule}"],
@@ -306,13 +316,13 @@
 			"javavm": "-Xmx2G",
 			"inputFormat": "bam",
 
-			"outdirs": {
-				"d_collectInsertSizeMetrics": "${outdir}/insertSizeMetrics"
-			},
+			"outdirs": [
+				{"d_collectInsertSizeMetrics": "${outdir}/insertSizeMetrics"}
+			],
 			
-			"outfiles": {	
-				"f_collectInsertSizeMetrics": "${d_collectInsertSizeMetrics}/insertSizeMetrics.txt"
-			},
+			"outfiles": [	
+				{"f_collectInsertSizeMetrics": "${d_collectInsertSizeMetrics}/insertSizeMetrics.txt"}
+			],
 			
 			"qsub": {
 				"name": "CollectInsertSizeMetrics",
@@ -330,7 +340,8 @@
 			}
 		},
 
-		"MeanQualityByCycle": {
+		{
+			"analysis": "MeanQualityByCycle",
 			"description": "Picard's MeanQualityByCycle",
 			"enable": 1,
 			"modules": ["${javaModule}","${rModule}"],
@@ -338,14 +349,14 @@
 			"javavm": "-Xmx2G",
 			"inputFormat": "bam",
 
-			"outdirs": {
-				"d_meanQualityByCycle": "${outdir}/meanQualByCycle"
-			},
+			"outdirs": [
+				{"d_meanQualityByCycle": "${outdir}/meanQualByCycle"}
+			],
 		
-			"outfiles": {
-				"f_meanQualityByCycle": "${d_meanQualityByCycle}/meanQuaByCycle.txt",
-				"f_meanQualityByCycle_pdf": "${d_meanQualityByCycle}/meanQualByCycle.pdf"
-			},
+			"outfiles": [
+				{"f_meanQualityByCycle": "${d_meanQualityByCycle}/meanQuaByCycle.txt"},
+				{"f_meanQualityByCycle_pdf": "${d_meanQualityByCycle}/meanQualByCycle.pdf"}
+			],
 			
 			"qsub": {
 				"name": "MeanQualityByCycle",
@@ -364,7 +375,8 @@
 			}
 		},
 
-		"QualityScoreDistribution": {
+		{
+			"analysis":	"QualityScoreDistribution",
 			"description": "Picard's QualityScoreDistribution",
 			"enable": 1,
 			"modules": ["${javaModule}","${rModule}"],
@@ -372,14 +384,14 @@
 			"javavm": "-Xmx2G",
 			"inputFormat": "bam",
 
-			"outdirs": {
-				"d_qualityScoreDistribution": "${outdir}/qcScoreDist"
-			},
+			"outdirs": [
+				{"d_qualityScoreDistribution": "${outdir}/qcScoreDist"}
+			],
 
-			"outfiles": {
-				"f_qualityScoreDistribution": "${d_qualityScoreDistribution}/qualScoreDist.txt",
-				"f_qualityScoreDistribution_chart": "${d_qualityScoreDistribution}/qualScoreDist_chart.pdf"
-			},
+			"outfiles": [
+				{"f_qualityScoreDistribution": "${d_qualityScoreDistribution}/qualScoreDist.txt"},
+				{"f_qualityScoreDistribution_chart": "${d_qualityScoreDistribution}/qualScoreDist_chart.pdf"}
+			],
 			
 			
 			"qsub": {
@@ -398,5 +410,5 @@
 				"CHART_OUTPUT=": "${f_qualityScoreDistribution_chart}"
 			}
 		}
-	}
+	]
 }
