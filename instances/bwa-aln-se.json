@@ -19,17 +19,17 @@
 		}
 	},
 	
-	"analyses": {
-
-		"bwa_aln": {
+	"analyses": [
+		{
+			"analysis": "bwa_aln",
 			"program": "bwa aln",
 			"enable": 1,
 			"modules": ["${bwaModule}"],
 			"inputFormat": "fastq",
 
-			"outfiles": {
-				"bwa_aln_out": "$(basename ${fastq%%.*} ).sai"
-			},
+			"outfiles": [
+				{"bwa_aln_out": "$(basename ${fastq%%.*} ).sai"}
+			],
 
 			"qsub": {
 				"mem": "6G"
@@ -43,15 +43,16 @@
 			"args": ["$reference","$fastq",">","$bwa_aln_out"]
 		},
 
-		"samse": {
+		{
+			"analysis": "samse",
 			"program": "bwa samse",
 			"enable": 1,
 			"modules": ["${bwaModule}"],
 			"inputFormat": "fastq",
 
-			"outfiles": {
-				"samse_out": "$(basename ${fastq%%.*}).sam"
-			},
+			"outfiles": [
+				{"samse_out": "$(basename ${fastq%%.*}).sam"}
+			],
 
 			"dependencies": ["bwa_aln"],
 			
@@ -63,15 +64,17 @@
 			"args": ["$reference","$bwa_aln_out","$fastq",">","$samse_out"]
 		},
 
-    "sam2Bam": {
+		{
+
+    	"analysis": "sam2Bam",
 			"program": "samtools view",
       "enable": 1,
       "modules": ["${samtoolsModule}"],
       "inputFormat": "sam",
 
-			"outfiles": {
-				"sam2Bam_out": "$(basename ${fastq%%.*}).bam"
-			},
+			"outfiles": [
+				{"sam2Bam_out": "$(basename ${fastq%%.*}).bam"}
+			],
 
 			"dependencies": ["samse"],
     
@@ -87,16 +90,17 @@
 			"args": ["$samse_out",">","$sam2Bam_out"]
 		},
 
-		"cleanBam": {
+		{
+			"analysis": "cleanBam",
 			"enable": 1,
 			"modules": ["${javaModule}"],
 			"jar": "${PICARD}/CleanSam.jar",
 			"javavm": "-Xmx4G",
 			"inputFormat": "bam",
 
-			"outfiles": {
-				"cleanBam_out": "$(basename ${fastq%%.*}).clean.bam"
-			},
+			"outfiles": [
+				{"cleanBam_out": "$(basename ${fastq%%.*}).clean.bam"}
+			],
 
 			"dependencies": ["sam2Bam"],
 
@@ -112,33 +116,35 @@
 			}
 		},
 
-		"renameCleanBam": {
-				"enable": 1,
-				"program": "mv",
-				"dependencies": ["cleanBam"],
+		{
+			"analysis": "renameCleanBam",
+			"enable": 1,
+			"program": "mv",
+			"dependencies": ["cleanBam"],
 
-				"outfiles": {
-					"renameCleanBam_out": "$(basename ${fastq%%.*}).bam"
-				},
+			"outfiles": [
+				{"renameCleanBam_out": "$(basename ${fastq%%.*}).bam"}
+			],
 
-				"qsub": {
-					"name": "renamecleanBam",
-					"slots": 1
-				},
+			"qsub": {
+				"name": "renamecleanBam",
+				"slots": 1
+			},
 			
-				"args": ["${cleanBam_out}","$renameCleanBam_out"]
+			"args": ["${cleanBam_out}","$renameCleanBam_out"]
 		},
 
-    "sortBam": {
+		{
+    	"analysis": "sortBam",
       "enable": 1,
       "modules": ["$javaModule"],
       "jar": "${PICARD}/SortSam.jar",
       "javavm": "-Xmx4G",
       "inputFormat": "bam",
 
-			"outfiles": {
-				"sortBam_out": "$(basename ${fastq%%.*}).coordSorted.bam"
-			},
+			"outfiles": [
+				{"sortBam_out": "$(basename ${fastq%%.*}).coordSorted.bam"}
+			],
 
 			"dependencies": ["renameCleanBam"],
   
@@ -155,34 +161,36 @@
       }
 		},
 
-		"renameSortBam": {
-				"enable": 1,
-				"program": "mv",
+		{
+			"analysis": "renameSortBam",
+			"enable": 1,
+			"program": "mv",
 
-				"outfiles": {
-					"renameSortBam_out": "$(basename ${fastq%%.*}).bam"
-				},
+			"outfiles": [
+				{"renameSortBam_out": "$(basename ${fastq%%.*}).bam"}
+			],
 
-				"dependencies": ["sortBam"],
+			"dependencies": ["sortBam"],
 
-				"qsub": {
-					"name": "renameSortBam",
-					"slots": 1
-				},
+			"qsub": {
+				"name": "renameSortBam",
+				"slots": 1
+			},
 			
-				"args": ["$sortBam_out","$renameSortBam_out"]
+			"args": ["$sortBam_out","$renameSortBam_out"]
 		},
-
-    "indexBam": {
+	
+		{
+    	"analysis": "indexBam",
       "enable": 1,
       "modules": ["$javaModule"],
       "jar": "${PICARD}/BuildBamIndex.jar",
       "javavm": "-Xmx4G",
       "inputFormat": "bam",
 
-			"outfiles": {
-				"indexBam_out": "$(basename ${fastq%%.*}).bai"
-			},
+			"outfiles": [
+				{"indexBam_out": "$(basename ${fastq%%.*}).bai"}
+			],
 
 			"dependencies": ["renameSortBam"],
   
@@ -197,5 +205,5 @@
 				"OUTPUT=": "$indexBam_out"
       }  
 		}
-	}
+	]
 }
