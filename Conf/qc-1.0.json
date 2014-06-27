@@ -45,28 +45,61 @@
 			"args": ["${bam}"]
 		},
 
-		{
-			"analysis": "flagstat",
-			"description": "samtools flagstat",
-			"program": "samtools flagstat",
+		{   
+			"analysis": "GATK_flagstat",
+			"description": "GATK's flagstat",
 			"enable": 1,
-			"modules": ["${samtoolsModule}"],
+			"modules": ["${javaModule}"],
+			"jar": "${gatk}/GenomeAnalysisTK.jar",
+			"javavm": "-Xmx5G",
 			"inputFormat": "bam",
-			"outdirs": [
-				{"d_flagstat": "${outdir}/flagstat"}
-       ],
+    
+      "outdirs": [
+        {"d_GATK_flagstat": "${outdir}/gatk_flagstat"}
+      ],  
 
       "outfiles": [
-	      {"f_flagstat": "${d_flagstat}/flagstat.txt"}
-			],
-			"qsub": {
-				"name": "flagstat",
-				"slots": 1,
+        {"f_GATK_flagstat": "${d_GATK_flagstat}/flagstat.txt"}
+      ],  
+    
+      "qsub": {
+        "name": "GATK_flagstat",
+        "slots": 1,
+        "mem": "10G"
+      },  
+    
+      "params": {
+        "-T": "FlagStat",
+        "-R": "${reference}",
+        "-I": "${bam}",
+        "-o": "${f_GATK_flagstat}"
+      }   
+		},  
+
+    {
+      "analysis": "samtools_flagstat",
+      "description": "samtools flagstat",
+      "program": "samtools flagstat",
+      "enable": 1,
+      "modules": ["${samtoolsModule}"],
+      "inputFormat": "bam",
+
+      "outdirs": [
+        {"d_samtools_flagstat": "${outdir}/samtools_flagstat"}
+      ],
+
+      "outfiles": [
+        {"f_samtools_flagstat": "${d_samtools_flagstat}/flagstat.txt"}
+      ],
+
+      "qsub": {
+        "name": "samtools_flagstat",
+        "slots": 1,
         "mem": "3G"
       },
 
-      "args": ["${bam}",">","${f_flagstat}"]
-		},
+      "args": ["${bam}",">","${f_samtools_flagstat}"]
+    },
 
 		{
 			"analysis": "DepthOfCoverageRefseqExonsQ0",

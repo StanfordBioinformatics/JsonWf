@@ -23,7 +23,7 @@
 		  "analysis": "fastqc",
 			"description": "FASTQC tool from Babraham Bioinformatics",
 			"program": "fastqc",
-			"enable": 1,
+			"enable": 0,
 			"modules": ["fastqc/0.10.1"],
 			"inputFormat": "bam",
 
@@ -44,8 +44,39 @@
 			"args": ["${bam}"]
 		},
 
+    {
+      "analysis": "GATK_flagstat",
+      "description": "GATK's flagstat",
+      "enable": 1,
+      "modules": ["${javaModule}"],
+      "jar": "${gatk}/GenomeAnalysisTK.jar",
+      "javavm": "-Xmx5G",
+      "inputFormat": "bam",
+      
+      "outdirs": [
+        {"d_GATK_flagstat": "${outdir}/gatk_flagstat"}
+      ],
+
+      "outfiles": [
+        {"f_GATK_flagstat": "${d_GATK_flagstat}/flagstat.txt"}
+      ],
+    
+      "qsub": {
+        "name": "GATK_flagstat",
+        "slots": 1,
+        "mem": "10G"
+      },
+    
+      "params": {
+        "-T": "FlagStat",
+        "-R": "${reference}",
+        "-I": "${bam}",
+        "-o": "${f_GATK_flagstat}"
+      }
+    },
+
 		{
-			"analysis": "flagstat",
+			"analysis": "samtools_flagstat",
 			"description": "samtools flagstat",
 			"program": "samtools flagstat",
 			"enable": 1,
@@ -53,20 +84,20 @@
 			"inputFormat": "bam",
 
 			"outdirs": [
-				{"d_flagstat": "${outdir}/flagstat"}
+				{"d_samtools_flagstat": "${outdir}/samtools_flagstat"}
 			],
 
 			"outfiles": [
-				{"f_flagstat": "${d_flagstat}/flagstat.txt"}
+				{"f_samtools_flagstat": "${d_samtools_flagstat}/flagstat.txt"}
 			],
 
 			"qsub": {
-				"name": "flagstat",
+				"name": "samtools_flagstat",
 				"slots": 1,
 				"mem": "3G"
 			},
 		
-			"args": ["${bam}",">","${f_flagstat}"]
+			"args": ["${bam}",">","${f_samtools_flagstat}"]
 		},
 
 		{
@@ -105,7 +136,7 @@
 		{
 			"analysis": "Concordance",
 			"description": "GATK's SelectVariants; outputs VCF file containing concordant records",
-			"enable": 1,
+			"enable": 0,
 			"modules": ["${javaModule}"],
 			"jar": "${gatk}/GenomeAnalysisTK.jar",
 			"javavm": "-Xmx2G",
@@ -139,7 +170,7 @@
 		{
 			"analysis": "Discordance",
 			"description": "GATK's SelectVariants; outputs VCF file containing discordant records",
-			"enable": 1,
+			"enable": 0,
 			"modules": ["${javaModule}"],
 			"jar": "${gatk}/GenomeAnalysisTK.jar",
 			"javavm": "-Xmx2G",
@@ -173,7 +204,7 @@
 		{
 			"analysis": "VariantEval",
 			"description": "GATK's VariantEval",
-			"enable": 1,
+			"enable": 0,
 			"modules": ["${javaModule}"],
 			"jar": "${gatk}/GenomeAnalysisTK.jar",
 			"javavm": "-Xmx2G",
@@ -211,7 +242,7 @@
 		{
 			"analysis":	"GenotypeConcordance",
 			"description": "GATK's GenotypeConcordance",
-			"enable": 1,
+			"enable": 0,
 			"modules": ["${javaModule}"],
 			"jar": "${gatk}/GenomeAnalysisTK.jar",
 			"javavm": "-Xmx2G",
@@ -243,7 +274,7 @@
 		{
 			"analysis": "CollectAlignmentSummaryMetrics",
 			"description": "Picard's CollectAlignmentSummaryMetrics",
-			"enable": 1,
+			"enable": 0,
 			"modules": ["${javaModule}"],
 			"jar": "${picard}/CollectAlignmentSummaryMetrics.jar",
 			"javavm": "-Xmx4G",
@@ -275,7 +306,7 @@
 		{
 			"analysis":	"CollectGcBiasMetrics",
 			"description": "Picards CollectGcBiasMetrics",
-			"enable": 1,
+			"enable": 0,
 			"modules": ["${javaModule}","${rModule}"],
 			"jar": "${picard}/CollectGcBiasMetrics.jar",
 			"javavm": "-Xmx4G",
@@ -310,7 +341,7 @@
 		{
 			"analysis": "CollectInsertSizeMetrics",
 			"description": "Picard's CollectInsertSizeMetrics",
-			"enable": 1,
+			"enable": 0,
 			"modules": ["${javaModule}","${rModule}"],
 			"jar": "${picard}/CollectInsertSizeMetrics.jar",
 			"javavm": "-Xmx2G",
@@ -343,7 +374,7 @@
 		{
 			"analysis": "MeanQualityByCycle",
 			"description": "Picard's MeanQualityByCycle",
-			"enable": 1,
+			"enable": 0,
 			"modules": ["${javaModule}","${rModule}"],
 			"jar": "${picard}/MeanQualityByCycle.jar",
 			"javavm": "-Xmx2G",
@@ -378,7 +409,7 @@
 		{
 			"analysis":	"QualityScoreDistribution",
 			"description": "Picard's QualityScoreDistribution",
-			"enable": 1,
+			"enable": 0,
 			"modules": ["${javaModule}","${rModule}"],
 			"jar": "${picard}/QualityScoreDistribution.jar",
 			"javavm": "-Xmx2G",

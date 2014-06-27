@@ -4,8 +4,8 @@ class Job:
 	By default, a job will get 1 slot and 10G mem, and a time limit of 7 days.
 	"""
 	tab = "\t"	
+	queue = ""
 	mem = "10G"
-	queue = "seq_pipeline" #by default, soft and hard time=7d, no limit on mem
 	pe = "shm"
 
 	@staticmethod
