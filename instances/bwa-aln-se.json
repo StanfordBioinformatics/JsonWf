@@ -95,7 +95,7 @@
 			"enable": 1,
 			"modules": ["${javaModule}"],
 			"jar": "${PICARD}/CleanSam.jar",
-			"javavm": "-Xmx4G",
+			"javavm": "-Xmx6G",
 			"inputFormat": "bam",
 
 			"outfiles": [
@@ -107,7 +107,7 @@
 			"qsub": {
 				"name": "cleanBam",
 				"slots": 1,
-				"mem": "8G"
+				"mem": "10G"
 			},
 
 			"params": {
@@ -185,7 +185,7 @@
       "enable": 1,
       "modules": ["$javaModule"],
       "jar": "${PICARD}/BuildBamIndex.jar",
-      "javavm": "-Xmx4G",
+      "javavm": "-Xmx6G",
       "inputFormat": "bam",
 
 			"outfiles": [
@@ -197,7 +197,7 @@
       "qsub": {
         "name": "BuildBamIndex",
         "slots": 1,
-        "mem": "8G"
+        "mem": "10G"
       },  
   
       "params": {
