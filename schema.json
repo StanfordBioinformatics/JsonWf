@@ -56,7 +56,7 @@
 							"slots": { "type": "integer" },
 							"mem": { "type": "string" },
 							"time": { "type": "string" },
-							"cwd": { "type": "string" },
+							"directory": { "type": "string" },
 							"queue": { "type": "string" },
 							"project": { "type": "string"},
 							"host":  { "type": "string" },

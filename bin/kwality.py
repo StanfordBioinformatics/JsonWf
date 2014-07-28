@@ -223,6 +223,7 @@ def resolveJsonPointer(txt):
 		num = int(txt[-1])
 		txt = txt[:-2] #2, b/c 1 for number and 1 for /
 	txt = txt.split("/")
+	#build executable code string that consists of a series of dictionary indexing parts, to ultimately index jconf:
 	exCode = "jconf"
 	for key in txt:
 		exCode += "['{0}']".format(key)
@@ -268,7 +269,8 @@ def checkResource(txt):
 
 def makeCmd(analysis,prog):	
 	"""
-	Function : String together a command and it's arguments from the input dictionary.
+	Function : String together a command and it's arguments from the input dictionary. The analysis objects for java programs should have the properties 'jar' and 'javavm' set. All others should use the 'program' property.
+             If both 'jar' and 'program' are set, then 'program' will be ignored.
 	Args     : analysis - str. Name of the program (i.e. the executable)
 						 prog - dict structured as an 'analyses' object in the json schema.
 	"""
@@ -322,11 +324,17 @@ def makeCmd(analysis,prog):
 	jobname = analysis
 	job = sjm_writer.Job(jobname)
 	job.setSjmFile(sjmfile)
-
-
 	job.setCmd(cmd)
 
-	job.setCwd(outdir)
+	directory = outdir #working directory (dir in which to execute the command)
+	try:
+		directory = qsub['directory']
+		if not os.path.exists(directory):
+			raise OSError("Directory {directory} does not exist! Check 'directory' property in the qsub object of analysis {analysis}.".format(directory=directory,analysis=analysis))
+	except KeyError:
+		pass
+
+	job.setWd(directory)
 	job.setJobLogDir(logdir)
 
 	mem = "mem"
@@ -396,13 +404,13 @@ def makeCmd(analysis,prog):
 def processAnalysis(analysisConf):
 	#check if output direcories are defined, and deal with these first, because it's allowed for
 	# the JSON resource dict called 'outfiles' to reference variables in the 'outdirs' JSON resource dict.
-	# As a result, any keys in the outdirs objecdt will be added to the environment. Note that the keys in the outfiles
+	# As a result, any keys in the outdirs object will be added to the environment. Note that the keys in the outfiles
 	# object will also be added to the environment.  These two objects are the only cases where  global resources can be defined outside of the "resources" object.
 	# This is also the only time in the code that I allow a JSON resource to be able to reference other JSON resources.
 	# 
 	outdirs = {}
 	try:
-		outdirs = analysisConf['outdirs']
+		outdirs = analysisConf['outdirs'] #outdirs, if defined, is an array of objects
 	except KeyError:
 		pass
 	if outdirs:
@@ -434,19 +442,19 @@ def processAnalysis(analysisConf):
 	for i in globalQsub:
 		if i not in qsubDico: #don't overwite!
 			qsubDico[i] = globalQsub[i]
-	expandVars(analysisConf) #replace resoruce variables with their resource values
+	expandVars(analysisConf) #replace resource variables with their resource values
 	makeCmd(analysis,analysisConf)
 
 
 
 
-coreQsubArgs = ["time","mem","slots","pe","host","queue", "project","outdir","-e","-o","cwd","name"]
+coreQsubArgs = ["time","mem","slots","pe","host","queue", "project","outdir","-e","-o","directory","name"]
 
-description = "Given a JSON configuration file that abides by the packaged schema.json file, this program will validate the conf file, then build an SJM file. Variable substitution is also supported, whereby any value in the conf file that begins with a '$' may be replaced by a global resource that is specified either on the command-line (CL) as an argument, or in the conf file itself. In the conf file, resources include the global resource and qsub objects.  CL set resources override conf file resources. For help with validating your JSON conf file, copy and past it into the online JSON Schema Validator at http://jsonformatter.curiousconcept.com/."
+description = "Given a JSON configuration file that abides by the packaged schema.json file, this program will validate the conf file, then build an SJM file. Variable substitution is also supported, whereby any value in the conf file that begins with a '$' may be replaced by a global resource that is specified either on the command-line (CL) as an argument, or in the conf file itself. In the conf file, resources include the global resource and qsub objects.  CL set resources override conf file resources. For help with validating your JSON conf file, copy and past it into the online JSON Schema Validator at http://jsonformatter.curiousconcept.com/.  By default, each analysis in the conf file is executed in the working directory specified by --outdir. This can be overwritten in a given analysis using the 'directory' property of the 'qsub' object.  For each job submitted run on the cluster, its stdout and stderr files will be written a directory called JobStatus, which is a subdirectory of --outdir; this cannot be changed."
 
 parser = ArgumentParser(description=description)
 parser.add_argument('--schema',default="/srv/gs1/software/gbsc/kwality/1.0/schema.json", help="The JSON schema that will be used to validate the JSON configuration file. Default is %(default)s.")
-parser.add_argument('--outdir',help="(Required when none of --analyses, --enabled, and --disabled are specified) The directory to output all result files. Can be a relative or absolute directory path. Will be created if it does't exist already. Will be added as a global resource.")
+parser.add_argument('--outdir',help="(Required when none of --analyses, --enabled, and --disabled are specified) The directory to output all result files. Can be a relative or absolute directory path. Will be created if it does't exist already. Will be added as a global resource. Serves as the default working directory when jobs are submitted to the cluster, for each analysis that doesn't set the working directory.")
 parser.add_argument('-c','--conf-file',required=True,help="Configuration file in JSON format.")
 parser.add_argument('resources',nargs="*",help="One or more space-delimited key=value resources that can override or append to the keys of the resoruce object in the JSON conf file. The value of the --outdir option will automatically be added here with the variable name 'outdir'.")
 parser.add_argument('-s','--sjmfile',help="(Required when none of --analyses, --enabled, and --disabled are specified) Output SJM file name (w/o directory path). The sjm file will be created in the directory passed to --outdir. If the file already exists, it will be appended to.")
@@ -551,7 +559,7 @@ try:
 	globalQsub = jsonResources['qsub']
 except KeyError:
 	pass
-##I add outdir to globalQsub last to make sure that it's not overwritten by jsonResources
+##I add outdir to globalQsub last to make sure that if the user had specified a variabled by the same name in jsonResources, it won't shodow the command-line arg outdir.
 globalQsub['outdir'] = outdir
 
 #create a dict with each analysis name in it as the key, and value i a list.
