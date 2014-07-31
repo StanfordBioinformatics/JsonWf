@@ -50,7 +50,7 @@
 			"description": "GATK's flagstat",
 			"enable": 1,
 			"modules": ["${javaModule}"],
-			"jar": "${gatk}/GenomeAnalysisTK.jar",
+			"jar": "${GATK}/GenomeAnalysisTK.jar",
 			"javavm": "-Xmx5G",
 			"inputFormat": "bam",
     

@@ -27,7 +27,7 @@ class Job:
 		self.project = False
 		self.time = False
 		self.slots = False
-		self.cwd = False
+		self.workdir = False
 		self.jobLogDir = False
 		self.additionalOpts = ""
 		self.dependencies = []
@@ -64,9 +64,6 @@ class Job:
 	def setSjmFile(self,sjmfile):
 		self.sjmfile = sjmfile
 
-	def setCwd(self,cwd):
-		self.cwd = cwd
-
 	def setJobLogDir(self,jobLogDir):
 		"""
 		Function : Sets the job log directory to which GE stdout and stderr files will be written. This calls setAdditionalOpt().
@@ -86,7 +83,7 @@ class Job:
 		self.cmd = cmd
 
 	def setWorkDir(self,dir):
-		self.dir = dir
+		self.workdir = dir
 
 	def setModules(self,modules):
 		self.modules = modules
@@ -133,8 +130,8 @@ class Job:
 	def getSjmFile(self):
 		return self.sjmfile
 
-	def getCwd(self):
-		return self.cwd
+	def getWorkDir(self):
+		return self.workdir
 
 	def getJobLogDir(self):
 		return self.jobLogDir
@@ -206,9 +203,9 @@ class Job:
 			fout.write(self.tab + "project " + project + "\n")
 
 
-		cwd = self.getCwd()
-		if cwd:
-			fout.write(self.tab + "directory " + cwd + "\n") 
+		workdir = self.getWorkDir()
+		if workdir:
+			fout.write(self.tab + "directory " + workdir + "\n") 
 
 		additionalOpts = self.getAdditionalOpts()
 		if additionalOpts:

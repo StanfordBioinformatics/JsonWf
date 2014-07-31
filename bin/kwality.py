@@ -334,7 +334,7 @@ def makeCmd(analysis,prog):
 	except KeyError:
 		pass
 
-	job.setWd(directory)
+	job.setWorkDir(directory)
 	job.setJobLogDir(logdir)
 
 	mem = "mem"
