@@ -1,22 +1,24 @@
 { 
 
 	"resources": {
-		"reference": "/srv/gs1/projects/scg/Resources/GATK/hg19/ucsc.hg19.fasta",
-    "dbsnp": "/srv/gs1/projects/scg/Resources/GATK/hg19-3.0/dbsnp_138.hg19.vcf",
-    "GATK": "/srv/gs1/software/GATK/GATK-3.0/GenomeAnalysisTK-3.0-0/",
-    "PICARD": "/srv/gs1/software/PICARD-tools/1.111",
-    "refseq_exons": "/srv/gsfs0/projects/gbsc/Clinical_Service/dbases/refSeq/refseq_exons.bed",
-    "rModule": "r",
-    "javaModule": "java/latest",
+		"reference": "/srv/gs1/projects/scg/Resources/GATK/hg19-3.0/ucsc.hg19.fasta",
+		"dbsnp": "/srv/gs1/projects/scg/Resources/GATK/hg19-3.0/dbsnp_138.hg19.vcf",
+    		"GATK": "/srv/gs1/software/gatk/gatk-3.1.1/GenomeAnalysisTK-nightly-2014-04-07-g8f6ff32/",
+    		"PICARD": "/srv/gs1/software/picard-tools/1.111",
+    		"refseq_exons": "/srv/gsfs0/projects/gbsc/Clinical_Service/dbases/refSeq/refseq_exons.bed",
+    		"rModule": "r",
+    		"javaModule": "java/latest",
 		"samtoolsModule": "samtools/0.1.19",
+		"fastqcModule": "fastqc/0.10.1",
 
 	  "qsub": {
 			"-M": "aminzia@stanford.edu",
-     	"-m": "a",
-    	"-A": "clinical-services",
-      "-R": "y"
+     			"-m": "a",
+    			"-A": "clinical-services",
+      			"-R": "y",
+      			"-l": "h_rt=36:00:00"
 		}
-  },
+  	},
 	
 	"analyses": [
 
@@ -25,7 +27,7 @@
 			"description": "FASTQC tool from Babraham Bioinformatics",
 			"program": "fastqc",
 			"enable": 1,
-			"modules": ["fastqc/0.10.1"],
+			"modules": ["${fastqcModule}"],
 			"inputFormat": "bam",
 
 			"outdirs": [
@@ -34,7 +36,7 @@
 
 			"qsub": {
 				"name": "FastQC",
-				"mem": "1G"
+				"mem": "8G"
 			},
 		
 			"params": {
@@ -45,61 +47,28 @@
 			"args": ["${bam}"]
 		},
 
-		{   
-			"analysis": "GATK_flagstat",
-			"description": "GATK's flagstat",
+		{
+			"analysis": "flagstat",
+			"description": "samtools flagstat",
+			"program": "samtools flagstat",
 			"enable": 1,
-			"modules": ["${javaModule}"],
-			"jar": "${GATK}/GenomeAnalysisTK.jar",
-			"javavm": "-Xmx5G",
+			"modules": ["${samtoolsModule}"],
 			"inputFormat": "bam",
-    
-      "outdirs": [
-        {"d_GATK_flagstat": "${outdir}/gatk_flagstat"}
-      ],  
+			"outdirs": [
+				{"d_flagstat": "${outdir}/flagstat"}
+      	 		],
 
-      "outfiles": [
-        {"f_GATK_flagstat": "${d_GATK_flagstat}/flagstat.txt"}
-      ],  
-    
-      "qsub": {
-        "name": "GATK_flagstat",
-        "slots": 1,
-        "mem": "10G"
-      },  
-    
-      "params": {
-        "-T": "FlagStat",
-        "-R": "${reference}",
-        "-I": "${bam}",
-        "-o": "${f_GATK_flagstat}"
-      }   
-		},  
+      			"outfiles": [
+	      			{"f_flagstat": "${d_flagstat}/flagstat.txt"}
+			],
+			"qsub": {
+				"name": "flagstat",
+				"slots": 1,
+       			"mem": "3G"
+      		},
 
-    {
-      "analysis": "samtools_flagstat",
-      "description": "samtools flagstat",
-      "program": "samtools flagstat",
-      "enable": 1,
-      "modules": ["${samtoolsModule}"],
-      "inputFormat": "bam",
-
-      "outdirs": [
-        {"d_samtools_flagstat": "${outdir}/samtools_flagstat"}
-      ],
-
-      "outfiles": [
-        {"f_samtools_flagstat": "${d_samtools_flagstat}/flagstat.txt"}
-      ],
-
-      "qsub": {
-        "name": "samtools_flagstat",
-        "slots": 1,
-        "mem": "3G"
-      },
-
-      "args": ["${bam}",">","${f_samtools_flagstat}"]
-    },
+      "args": ["${bam}",">","${f_flagstat}"]
+		},
 
 		{
 			"analysis": "DepthOfCoverageRefseqExonsQ0",
@@ -473,6 +442,39 @@
 			}
 		},
 
+                {
+                        "analysis": "VariantEval_dbsnp",
+                        "description": "GATK's VariantEval dbSNP",
+                        "enable": 1,
+                        "modules": ["${javaModule}"],
+                        "jar": "${GATK}/GenomeAnalysisTK.jar",
+                        "javavm": "-Xmx2G",
+                        "inputFormat": "vcf",
+
+                        "outdirs": [
+                                {"d_variantEval_dbsnp": "${outdir}/variantEval-dbsnp"}
+                        ],
+
+                        "outfiles": [
+                                {"f_variantEval_dbsnp": "${d_variantEval_dbsnp}/variantEval_metrics.txt"}
+                        ],
+
+                        "qsub": {
+                                "name": "VariantEval_dbsnp",
+                                "slots": 1,
+                                "mem": "12G"
+                        },
+
+                        "params": {
+                                "-nt": 6,
+                                "-T": "VariantEval",
+                                "-R": "${reference}",
+                                "--eval:set1,vcf": "${vcf}",
+                                "--dbsnp": "${dbsnp}",
+                                "-o": "${f_variantEval_dbsnp}"
+                        }
+                },
+
 		{
 			"analysis": "GenotypeConcordance",
 			"description": "GATK's GenotypeConcordance",
@@ -559,7 +561,7 @@
 			"qsub": {
 				"name": "CollectGcBiasMetrics",
 				"slots": 1,
-				"mem": "8G"
+				"mem": "15G"
 			},
 		
 			"params": {
@@ -592,7 +594,7 @@
 			"qsub": {
 				"name": "CollectInsertSizeMetrics",
 				"slots": 1,
-				"mem": "5G"
+				"mem": "10G"
 			},
 	
 			"params": {
@@ -626,7 +628,7 @@
 			"qsub": {
 				"name": "MeanQualityByCycle",
 				"slots": 1,
-				"mem": "5G"
+				"mem": "10G"
 			},
 	
 			"params": {
@@ -662,7 +664,7 @@
 			"qsub": {
 				"name": "QualityScoreDistribution",
 				"slots": 1,
-				"mem": "5G"
+				"mem": "12G"
 			},
 	
 			"params": {
