@@ -122,6 +122,17 @@ def getEnabledAnalyses():
 			dico[analysis] = val
 	return dico
 
+def setAnalysisStatus(analysis,enable=True):
+	"""
+	Function : Sets analysis to enabled or disabled
+	Args     : analysis - str. An analysis name.
+						 enable - bool
+	"""
+	if enable:
+		analysisDict[analysis]['enable'] = 1
+	else:
+		analysisDict[analysis]['enable'] = 0	
+
 def addToEnvironment(key=False,value=False,dico={}):
 	"""
    Function : Adds environment variables that are passed in as a dict or key and value, or both.
@@ -408,6 +419,7 @@ def processAnalysis(analysisConf):
 	# object will also be added to the environment.  These two objects are the only cases where  global resources can be defined outside of the "resources" object.
 	# This is also the only time in the code that I allow a JSON resource to be able to reference other JSON resources.
 	# 
+	analysisName = analysisConf['analysis']
 	outdirs = {}
 	try:
 		outdirs = analysisConf['outdirs'] #outdirs, if defined, is an array of objects
@@ -443,7 +455,7 @@ def processAnalysis(analysisConf):
 		if i not in qsubDico: #don't overwite!
 			qsubDico[i] = globalQsub[i]
 	expandVars(analysisConf) #replace resource variables with their resource values
-	makeCmd(analysis,analysisConf)
+	makeCmd(analysisName,analysisConf)
 
 
 
@@ -464,6 +476,9 @@ parser.add_argument('--wait',action="store_true",help="When --run is specified, 
 parser.add_argument('--analyses',action="store_true",help="Display a list of availble analyses present in --conf-file.")
 parser.add_argument('--enabled',action="store_true",help="Display a list of enabled analyses present in --conf-file.")
 parser.add_argument('--disabled',action="store_true",help="Display a list of disabled analyses present in --conf-file.")
+group = parser.add_mutually_exclusive_group()
+group.add_argument('--enable-all-except',help="Comma-delimited list of case-sensitive analysis names from --conf-file to disable. All others will be enabled.")
+group.add_argument('--disable-all-except',help="Comma-delimited list of case-sensitive analysis names from --conf-file to enable. All others will be disabled.")
 
 def outputAnalyses(analysisDict):
 	"""
@@ -491,15 +506,12 @@ sfh = open(schema,'r')
 jschema = json.load(sfh)
 jsonschema.validate(jconf,jschema)
 
-ald = jconf['analyses'] # analysis list dicts - a list of analyses (dicts)
-analysisNames = [x['analysis'] for x in ald]
 analysisDict = {}
-count = -1
-for name in analysisNames:
-	count += 1
-	if name in analysisDict:
-		raise ValueError("Duplicate analysis name {}".format(name))
-	analysisDict[name] = ald[count]
+for analysisConfig in jconf['analyses']:
+	analysisName = analysisConfig['analysis']
+	if analysisName in analysisDict:
+		raise ValueError("Duplicate analysis name {}".format(analysisName))
+	analysisDict[analysisName] = analysisConfig
 
 allAnalyses = getAllAnalyses()
 numAllAnalyses = len(allAnalyses)
@@ -518,6 +530,32 @@ elif args.disabled:
 	outputAnalyses(da)
 	parser.exit()
 
+disableList = args.enable_all_except
+if disableList:
+	disableList = [x.strip() for x in disableList.split(",")]
+	for i in disableList:
+		if i not in analysisDict:
+			parser.error("Case-sensitive Analysis name {analysis} provided to --enable-all-except doesn't exist in {conf}.".format(analysis=i,conf=args.conf_file))
+
+enableList = args.disable_all_except
+if enableList:
+	enableList = [x.strip() for x in enableList.split(",")]
+	for i in enableList:
+		if i not in analysisDict:
+			parser.error("Case-sensitive analysis name {analysis} provided to --disable-all-except doesn't exist in {conf}.".format(analysis=i,conf=args.conf_file))
+
+if disableList:
+	for analysisName in analysisDict:
+		if analysisName in disableList:
+			setAnalysisStatus(analysisName,False)
+		else:
+			setAnalysisStatus(analysisName,True)
+elif enableList:
+	for analysisName in analysisDict:
+		if analysisName in enableList:
+			setAnalysisStatus(analysisName,True)
+		else:
+			setAnalysisStatus(analysisName,False)
 
 resdico = {} #resource dict
 
@@ -562,8 +600,8 @@ except KeyError:
 ##I add outdir to globalQsub last to make sure that if the user had specified a variabled by the same name in jsonResources, it won't shodow the command-line arg outdir.
 globalQsub['outdir'] = outdir
 
-#create a dict with each analysis name in it as the key, and value i a list.
-# even analyses with not dependencies will appear in the dict, and have the empty list.
+#create a dict with each analysis name in it as the key, and value as list.
+# even analyses with no dependencies will appear in the dict, and have the empty list.
 analyses = getEnabledAnalyses() #only retrieves enabled analyses
 allDependencies = {}
 for analysis in analyses:
@@ -582,7 +620,7 @@ checkCircDeps(allDependencies)
 
 
 analysisNameDico = {}
-for i in analyses:
+for i in getEnabledAnalyses():
 	analysisNameDico[i] = 1
 while analysisNameDico:
 	for analysis in analysisNameDico.keys():
