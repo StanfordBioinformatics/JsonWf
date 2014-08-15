@@ -14,9 +14,9 @@
 		"fastqcModule": "fastqc/0.10.1",
 
 	  "qsub": {
-			"-M": "aminzia@stanford.edu",
+		"-M": "input-notification-email-address-here",
   		"-m": "a",
-   		"-A": "clinical-services",
+   		"-A": "input-account-name-to-be-billed-here",
    		"-R": "y",
    		"-l": "h_rt=36:00:00"
   		}
@@ -220,6 +220,7 @@
       "qsub": {
         "name": "DepthOfCoverageGenomeQ0",
         "slots": 1,
+   	"-l": "h_rt=48:00:00",
         "mem": "12G"
       },
 
@@ -252,6 +253,7 @@
        "qsub": {
          "name": "DepthOfCoverageGenomeQ10",
          "slots": 1,
+   	"-l": "h_rt=48:00:00",
          "mem": "12G"
        },
 
@@ -285,6 +287,7 @@
       "qsub": {
         "name": "DepthOfCoverageGenomeQ20",
         "slots": 1,
+   	"-l": "h_rt=48:00:00",
         "mem": "12G"
       },
 
@@ -318,6 +321,7 @@
       "qsub": {
         "name": "DepthOfCoverageGenomeQ30",
         "slots": 1,
+   	"-l": "h_rt=48:00:00",
         "mem": "12G"
       },
 
