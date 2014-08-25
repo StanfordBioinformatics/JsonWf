@@ -705,7 +705,7 @@
 			"qsub": {
 				"name": "SnpEff",
 				"slots": 1,
-				"mem": "6G",
+				"mem": "7G",
 				"directory": "${d_SnpEff}"
 			},
 	
