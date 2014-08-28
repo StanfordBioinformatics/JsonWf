@@ -4,7 +4,7 @@
 		"reference": "/srv/gs1/projects/scg/Resources/GATK/hg19-3.0/ucsc.hg19.fasta",
 		"reference_SnpEff": "hg19",
 		"dbsnp": "/srv/gs1/projects/scg/Resources/GATK/hg19-3.0/dbsnp_138.hg19.vcf",
-		"GATK": "/srv/gs1/software/gatk/gatk-3.1.1/GenomeAnalysisTK-nightly-2014-04-07-g8f6ff32/",
+		"GATK": "/srv/gs1/software/gatk/gatk-3.1.1/GenomeAnalysisTK-nightly-2014-04-07-g8f6ff32",
 		"PICARD": "/srv/gs1/software/picard-tools/1.111",
 		"SNPEFF": "/srv/gs1/software/snpeff/3.6",
 		"refseq_exons": "/srv/gsfs0/projects/gbsc/Clinical_Service/dbases/refSeq/refseq_exons.bed",
