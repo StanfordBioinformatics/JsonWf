@@ -222,6 +222,6 @@ def writeDependencies(dico,sjmfile):
 	"""
 	fout = open(sjmfile,'a')
 	for jobname in dico:
-		for dependency in dico[jobname]:
+		for dependency in dico[jobname].dependencies:
 			fout.write("order {jobname} after {dependency}\n".format(jobname=jobname,dependency=dependency))
 	fout.close()
