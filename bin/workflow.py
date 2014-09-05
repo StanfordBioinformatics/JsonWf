@@ -10,6 +10,9 @@ import re
 import copy
 
 
+
+SCHEMA = os.path.join(os.path.dirname(__file__),"schema.json")
+
 class Duplicate(Exception):
 	pass	
 
@@ -72,7 +75,7 @@ class Workflow:
 		cfh = open(conf,'r')
 		jconf = json.load(cfh)
 		self.rmComments(jconf)
-		sfh = open("schema.json",'r')
+		sfh = open(SCHEMA,'r')
 		jschema = json.load(sfh)
 		jsonschema.validate(jconf,jschema)
 		return jconf,jschema
