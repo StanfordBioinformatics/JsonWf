@@ -3,12 +3,28 @@ JsonWf
 
 clinical qc package
 
-March 31, 2014
+Created:  March 31, 2014
+Last updated: September 29, 2014
 Nathaniel Watson
 
+NOTE - This documentation is under active development.  Not everything is up-to-date.
+
 Abstract:
-JsonWf is a tool for building structured workflows in JSON format.  Each JSON workflow is structured according to a built-in schema.  
-Kwality performs multiple QC analyses for data in FASTQ, BAM, and VCF format. Analyses run in parallel, apart from specified dependencies, on a cluster.  The tool is executed with the script kwality.py, which requires a configuration (conf) file in JSON format, a directory name in which to execute all analyses, and a job file name.  The conf file is validated against a built-in JSON schema. The output job file is written in Simple Job Manager (SJM) format, and is executed with the sjm command; see https://github.com/StanfordBioinformatics/SJM/blob/master/doc/MANUAL.txt for more details.  SJM is a tool for managing a set of jobs that are run on a cluster (i.e. Open Grid Engine). SJM is not included in the kwality bundle. Job stdout and stderr streams will be written to files within the JobStatus directory. This directory is a sub-directory of the output directory given to kwality.py, and is automatically created.
+JsonWf a format specification for defining a workflow, and is also a tool for building and running the workflow.  A worfklow is defined as a set of related tasks, or jobs, that are to be executed for given input data.  A workflow definition  (not to be confused with the meaning of a workflow) is written in JSON according to a built-in schema, which enables powerful error checking in the configuration.  When given such a workflow definition, Jsonwill
+	
+	1) ensure that the workflow definition (configuration) is all valid JSON,
+	2) validate the configuration against the built-in schema.  This will catch many types of potential errors in the configuration, including typos, undefined variables, and circular job dependencies,
+	3) create a directed acyclic graph (DAG) to deconvolute job dependencies,
+	4) write the validated and parsed configuration to a file in a format known as SJM format, which is understood by the SJM (Simple Job Manager) tool. The file in SJM format should be thought of as the worklfow itself (and not the workflow definition as previously discussed), and 
+	5) call SJM to execute SJM file (workflow) locally or on either the OGE or LSF compute cluster.  More about SJM further below.
+
+
+Any number of workflows can be defined in JsonWf. The prototype workflow is Kwality, which is the first workflow written in JsonWf. In fact, JsonWf and Kwality co-evolved together, and in the beginning were part of the same piece of software.  Kwality contains a set of commands for obtaining statistics and other QC measaures for DNA sequence data analysis, and is shipped with JsonWf especially for demonstration purposes.
+
+SJM is currently not shipped with JsonWf, but is a accessible form github at https://github.com/StanfordBioinformatics/SJM/blob/master/doc/MANUAL.txt . SJM is a tool for managing a set of jobs that are run on OGE or LSF compute cluster, or locally on ones personal computer. 
+
+
+JsonWf is run with the script jsonWorkflow.py.  Required arguments are the workflow definition file (-c argument) and the output directory argument (--outdir argument). Job standard output (stdout) and standard error (stderr) streams will be written to files within the JobStatus directory. This directory is a sub-directory of the output directory given to kwality.py, and is automatically created.
 
 JSON SCHEMA:
 The packaged schema schema.json defines the rules and structure of the 
