@@ -54,6 +54,7 @@
 					"qsub": {
 						"type": "object",
 						"properties": {
+							"name" : { "type": "string" },
 							"slots": { "type": "integer" },
 							"mem": { "type": "string" },
 							"time": { "type": "string" },

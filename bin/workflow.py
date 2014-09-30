@@ -478,7 +478,11 @@ class Workflow:
 		"""
 		conf = self.analysisDict[analysisName]
 		qsub = conf['qsub']
-		jobname = analysisName
+		#If 'name' key defined in qsub object, then use that as the job name in SJM, otherwise, use the analysisName as the jobname
+		try:
+			jobname = qsub['name']
+		except KeyError:
+			jobname = analysisName
 		job = sjm_writer.Job(jobname)
 		job.setSjmFile(sjmfile)
 		job.setCmd(cmd)
