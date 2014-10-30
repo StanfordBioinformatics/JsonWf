@@ -48,6 +48,9 @@ for i in args.resources:
 	resources[key] = val
 wf = workflow.Workflow(conf=args.conf_file,outdir=outdir,resources=resources)
 
+#if the user supplied an analysis category (any of the options --analyses, --enabled, or --disabled)
+# recall that only one category can be passed in a given call to the program, then the analyses within the 
+# given category will be printed to stdout and then the program will exit:
 meta = wf.showAnalyses(all=args.analyses,enabled=args.enabled,disabled=args.disabled)
 if meta:
 	print("\n" + meta)

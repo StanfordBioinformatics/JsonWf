@@ -47,7 +47,7 @@ class Workflow:
 		  jsonResources = self.conf['resources']
 		except KeyError:
 	 		pass
-		self.expandVariables(jsonResources) #the resources object in the conf file can utilize (reference) the resources supplied to the constructor (including outdir and logdir)
+		self.updateConfVals(jsonResources) #the resources object in the conf file can utilize (reference) the resources supplied to the constructor (including outdir and logdir)
 		self.addToResources(dico=jsonResources) 
 
 		self.globalQsub = {}	
@@ -147,7 +147,7 @@ class Workflow:
 				analysisNameDico.pop(name)
 				for i in allDependencies:
 					if name in allDependencies[i].dependencies:
-							allDependencies[i].remove(name)
+							allDependencies[i].dependencies.remove(name)
 		return levelDico
 
 	def enabled(self,analysis):
@@ -266,7 +266,6 @@ class Workflow:
 		"""
 	   Function : Adds key and value pairs to self.resources, while creating environment variables from them at the same time. In the function call, a key and value pair may be  passed in, a dict may be passed in,
 							  or both. Raises a Duplicate exception if the key already exists in self.resources. If a dict is provided, nested dict objects are supported, but all nesting will be lost when added to self.resources.
-                In the case of a dict, keys and values are added in the same manner as 
 		 Args     : key,value - str.
 								dico - dict of variables to add to the environment, where each key and value are strings.
 		 Returns  : 
@@ -304,7 +303,7 @@ class Workflow:
 		Args : analysis - an Dependency() instance
 		"""
 		try:
-			deps = self.analysisDict['analysis']['dependencies']
+			deps = self.analysisDict[analysis]['dependencies']
 		except KeyError:
 			return []
 		enabledDeps = []
@@ -397,8 +396,7 @@ class Workflow:
 		Args     : txt - str.
 		Returns  : str. txt that has undergone variable expansion via the shell.
 		"""
-		txt = str(txt)
-		groupiter = self.varReg.finditer(txt)	
+		groupiter = self.varReg.finditer(txt)
 		for i in groupiter:
 			dico = i.groupdict()
 			varName = dico['brace']
@@ -590,9 +588,9 @@ class Workflow:
 		except KeyError:
 			pass
 		if outdirs:
-			for i in outdirs:
+			for i in outdirs: #i is a dict of one key and a string value
 				self.updateConfVals(i)
-				for key in i:
+				for key in i: #should only be a single key, anyways the schema mandates that
 					path = i[key]
 					if not os.path.exists(path):
 						os.mkdir(path)
