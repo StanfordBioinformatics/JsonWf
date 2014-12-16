@@ -94,7 +94,7 @@ wf.processAnalyses()
 wf.buildSjmFile(sjmfile=sjmfile)
 
 if run:
-	if args. wait:
-		subprocess.call("sjm {sjmfile}".format(sjmfile=sjmfile),shell=True)
+	if args.wait:
+		subprocess.call("sjm -i {sjmfile}".format(sjmfile=sjmfile),shell=True)
 	else:
 		subprocess.Popen("sjm {sjmfile}".format(sjmfile=sjmfile),shell=True)

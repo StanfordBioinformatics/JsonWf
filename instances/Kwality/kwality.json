@@ -15,11 +15,11 @@
 	},
 
   "globalQsub": {
-	"-M": "input-notification-email-address-here",
- 	"-m": "a",
- 		"-A": "input-account-name-to-be-billed-here",
- 		"-R": "y",
- 		"-l": "h_rt=36:00:00"
+		"-M": "input-notification-email-address-here",
+		"-m": "a",
+		"-A": "clinical_services",
+		"-R": "y",
+		"-l": "h_rt=36:00:00"
  	},
 	
 	"analyses": [

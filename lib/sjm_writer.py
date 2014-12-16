@@ -40,6 +40,9 @@ class Job:
 		self.additionalOpts = opts
 
 	def addAdditionalOpts(self,opt):
+		"""
+		Args : opt - str. of options and their values
+		"""
 		ads = self.getAdditionalOpts()
 		ads += " " + opt
 		self.setAdditionalOpts(ads)

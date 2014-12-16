@@ -1,5 +1,5 @@
 { 
-
+	"version": "2.0.0",
 	"resources": {
 		"reference": "/srv/gs1/projects/scg/Genomes/H_sapiens/hg19_male/BWA/hg19_male.fa",
 		"dbsnp": "/srv/gs1/projects/scg/Resources/GATK/hg19-3.0/dbsnp_138.hg19.vcf",
@@ -32,7 +32,8 @@
 			],
 
 			"qsub": {
-				"mem": "6G"
+				"mem": "6G",
+				"slots": 4
 			},
 		
 			"params": {
