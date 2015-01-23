@@ -1,13 +1,9 @@
 JsonWf
 ======
-
-clinical qc package
-
 Created:  March 31, 2014
-Last updated: September 29, 2014
 Nathaniel Watson
 
-NOTE - This documentation is under active development.  Not everything is up-to-date.
+NOTE - This documentation is under active development.
 
 Abstract:
 JsonWf a format specification for defining workflow configuration; it is also the software that supports this specification.  A worfklow is defined as a set of related tasks, or jobs, that are to be executed for some given input data. Separating the configuration from the workflow code itself allows for ease in workflow management and customization.  In JsonWf, the workflow configuration is written in JSON in a format that abides by a built-in schema, which allows for powerful error checking.  Parameters, input and output file names, and job depencendies can easily be defined without any redundancy through the use of variables.  A workflow's complete set of configuration, which shall be referred to as a (workflow) definition, may be programatically parsed via the API for use in downstream software. In addition, JsonWf includes a built-in tool to write the definition into a SJM pipeline.
@@ -21,7 +17,7 @@ The main script that reads a file in JsonWf format is called jsonWorkflow.py.  G
 	5) call SJM to execute SJM file (workflow) locally or on either the OGE or LSF compute cluster.  More about SJM further below.
 
 
-A prototype workflow definition for demonstrating the capabilities of JsonWf is Kwality, which is the first definition written in JsonWf. In fact, JsonWf and Kwality co-evolved together, and in the beginning were part of the same piece of software.  Kwality contains a set of commands for obtaining statistics and other QC measaures for DNA sequence data analysis, and is shipped with JsonWf especially for demonstration purposes.  Another prototype definition is called bwa-aln-se.json, which also ships with this software; and this prototype demonstrates the use of dependencies whereas Kwality does not at present.
+A prototype workflow definition for demonstrating the capabilities of JsonWf is Kwality, which is the first definition written in JsonWf. There is a useful Google Slides document [1] that demonstrates the usage of JsonWf and introduces you to the Kwality workflow.  In fact, JsonWf and Kwality co-evolved together, and in the beginning were part of the same piece of software.  Kwality contains a set of commands for obtaining statistics and other QC measaures for DNA sequence data analysis, and is shipped with JsonWf especially for demonstration purposes.  Another prototype definition is called bwa-aln-se.json, which also ships with this software; and this prototype demonstrates the use of dependencies whereas Kwality does not at present.
 
 SJM is currently not included with the JsonWf distribution, but is a accessible form github at https://github.com/StanfordBioinformatics/SJM/blob/master/doc/MANUAL.txt . SJM is a tool for managing a set of jobs that are run on OGE or LSF compute cluster, or locally on ones personal computer. 
 
@@ -49,6 +45,9 @@ Qsub object properties:
 There is limitid support JSON pointers see, as defined in rfc6901 (http://tools.ietf.org/html/rfc6901). Currently, only absolute JSON pointers to values within the same document are supported. Instead of using pointers, use the resource mechanism described above.
 
 More documentation coming ...
+
+References:
+[1] Google Slides document for Kwality https://docs.google.com/a/stanford.edu/presentation/d/1sOQ2dJhI9bFvlU7GDiyrNfRP2r9Op06xc4qp2JTni5U/edit?usp=drive_web
 
 ABBREVIATIONS:
 SGE - Sun Grid Engine
