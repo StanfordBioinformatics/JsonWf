@@ -1,6 +1,6 @@
 #Copyright 2015 Nathaniel Watson
 
-#This file is part of JsonWF.
+#This file is part of JsonWf.
 
 #JsonWF is free software: you can redistribute it and/or modify
 #it under the terms of the GNU General Public License as published by
