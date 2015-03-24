@@ -1,5 +1,22 @@
 #!/srv/gs1/software/python/python-2.7/bin/python
 
+#Copyright 2015 Nathaniel Watson
+
+#This file is part of JsonWF.
+
+#JsonWF is free software: you can redistribute it and/or modify
+#it under the terms of the GNU General Public License as published by
+#the Free Software Foundation, either version 3 of the License, or
+#(at your option) any later version.
+
+#JsonWF is distributed in the hope that it will be useful,
+#but WITHOUT ANY WARRANTY; without even the implied warranty of
+#MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#GNU General Public License for more details.
+
+#You should have received a copy of the GNU General Public License
+#along with Foobar.  If not, see <http://www.gnu.org/licenses/>.
+
 import sys
 import os
 import json
@@ -54,7 +71,7 @@ class Workflow:
 		try:
 			self.globalQsub = self.conf['globalQsub']
 		except KeyError:
-			pass
+			print("Warning - Did not find a globalQsub object in your conf file in the location allowed by the schema; continuing ...")
 
 		self.analysisDict = {}
 		for analysisConf in self.conf['analyses']:
@@ -472,7 +489,9 @@ class Workflow:
 	def sjmBlock(self,sjmfile,cmd,analysisName):	
 		"""
 		Function :
-		Args     :
+		Args     : sjmfile - str. the sjmfile the command block will be written to (in append mode).
+							 cmd - str. The command to run.
+							 analysisName - str. The name of one of the analysis objects in the analyses arrary of the conf file.
 		"""
 		conf = self.analysisDict[analysisName]
 		qsub = conf['qsub']
