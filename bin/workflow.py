@@ -28,7 +28,6 @@ import copy
 
 
 
-SCHEMA = os.path.join(os.path.dirname(__file__),"schema.json")
 
 class Duplicate(Exception):
 	pass	
@@ -39,6 +38,9 @@ class CircularDependency(Exception):
 
 class Workflow:
 	###varReg finds variables of the type $var and ${var} and ${var%%.txt}, ... variables can be mixed in with some string, such as a file path.
+	SCHEMA = os.path.join(os.path.dirname(__file__),"schema.json")
+	ENABLED = 1
+	DISABLED = 0
 	varReg = re.compile(r'(\${(?P<brace>[\d\w]+))|(\$(?P<dollar>[\d\w]+))')
 	numReg = re.compile(r'\d$')
 	coreQsubArgs = ["time","mem","slots","pe","host","queue", "project","outdir","-e","-o","directory","name"]
@@ -92,7 +94,7 @@ class Workflow:
 		cfh = open(conf,'r')
 		jconf = json.load(cfh)
 		self.rmComments(jconf)
-		sfh = open(SCHEMA,'r')
+		sfh = open(self.SCHEMA,'r')
 		jschema = json.load(sfh)
 		jsonschema.validate(jconf,jschema)
 		return jconf,jschema
@@ -275,9 +277,9 @@ class Workflow:
 							 enable - bool
 		"""
 		if enable:
-			self.analysisDict[analysis]['enable'] = 1
+			self.analysisDict[analysis]['enable'] = self.ENABLED
 		else:
-			self.analysisDict[analysis]['enable'] = 0	
+			self.analysisDict[analysis]['enable'] = self.DISABLED
 	
 	def addToResources(self,key=False,value=False,dico={}):
 		"""
@@ -581,9 +583,11 @@ class Workflow:
 
 	def buildSjmFile(self,sjmfile):
 		"""
-		Function: Writes all analyses in SJM format in the passed-in file.
+		Function: Writes all analyses in SJM format to the passed-in file name.
 		"""
 		for analysisName in self.analysisDict:	
+			if not self.enabled(analysisName):
+				continue
 			cmd = self.makeCmdLine(analysisName)
 			self.sjmBlock(sjmfile,cmd,analysisName)
 	
