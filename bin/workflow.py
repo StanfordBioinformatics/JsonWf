@@ -291,9 +291,9 @@ class Workflow:
 		"""
 		#os.environ internally calls os.putenv, which will also set the environment variables at the outter shell level.
 		if key and not value:
-			raise ValueError("kwality.addToResources() must have argument 'value' set when argument 'key' is set.")
+			raise ValueError("workflow.addToResources() must have argument 'value' set when argument 'key' is set.")
 		elif value and not key:
-			raise ValueError("kwality.addToResources() must have argument 'key' set when argument 'value' is set.")	
+			raise ValueError("workflow.addToResources() must have argument 'key' set when argument 'value' is set.")	
 	
 		if key:
 			key = str(key)
@@ -374,7 +374,7 @@ class Workflow:
 	def updateConfVals(self,dico):
 		"""
 		Function : Given a dict, looks at all setting values and find any variables (words beginning with '$') 
-	             and check if a parameter with the same name (omitting the '$') exists in self.resources
+	             and checks if a parameter with the same name (omitting the '$') exists in self.resources
 	             Works recursivly for a dict within a dict.
 	
 		Args     : analysisName - the name of an analysis
@@ -635,7 +635,7 @@ class Workflow:
 		try:
 			qsubDico = analysisConf['qsub']	
 		except KeyError:
-			pass
+			analysisConf['qsub'] = qsubDico
 		for i in self.globalQsub:
 			if i not in qsubDico: #don't overwite!
 				qsubDico[i] = self.globalQsub[i]
