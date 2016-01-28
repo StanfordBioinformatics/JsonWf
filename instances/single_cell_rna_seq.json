@@ -38,6 +38,7 @@
 				"--runNumThread": 15,
 				"--quantMode": "GeneCounts",
 				"--genomeDir": "${hg19_genome_dir}",
+				"--outFileNamePrefix": "${d_star_mapper}",
 				"--sjdbGTFfile": "${hg19_gtf_file}",
 				"--outdir": "${d_star_mapper}",
 				"--readFilesIn": "${read1} ${read2}"
