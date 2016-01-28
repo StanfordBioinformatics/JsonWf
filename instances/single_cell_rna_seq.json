@@ -1,0 +1,47 @@
+{ 
+	"version": "1.0.0",
+	"resources": {
+		"hg19_genome_dir": "/srv/gsfs0/shared_data/RefGenomes/H_sapiens/hg19/indexes/STAR/$version/iGenomes/05_14_2014",
+		"hg19_gtf_file":   "/srv/gsfs0/shared_data/RefGenomes/H_sapiens/hg19/illumina_igenomes_homo_sapiens_ucsc_hg19.gtf",
+		"starModule": "STAR/2.5.1b"
+	},
+
+  "globalQsub": {
+		"-M": "nathankw@stanford.edu",
+		"-m": "a",
+		"-A": "cirm",
+		"-R": "y",
+		"-l": "h_rt=36:00:00"
+ 	},
+	
+	"analyses": [
+
+		{
+			"analysis": "star_mapper",
+			"description": "Splice-aware aligner",
+			"program": "STAR",
+			"enable": 1,
+			"modules": ["${starModule}"],
+			"inputFormat": "bam",
+
+			"outdirs": [
+				{"d_star_mapper": "${outdir}/star_mapper"}
+			],
+
+			"qsub": {
+				"name": "star_mapper",
+				"mem": "6G",
+				"slots": 15
+			},
+		
+			"params": {
+				"--runNumThread": 15,
+				"--quantMode": "GeneCounts",
+				"--genomeDir": "${hg19_genome_dir}",
+				"--sjdbGTFfile": "${hg19_gtf_file}",
+				"--outdir": "${d_star_mapper}",
+				"--readFilesIn": "${read1} ${read2}"
+			}
+		}
+	]
+}
