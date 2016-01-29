@@ -16,6 +16,24 @@
 	
 	"analyses": [
 
+		{ 
+			"analysis": "star_load_genome",
+			"description": "Load the genome into memory for all subsequent mapping jobs to use.",
+			"program": "STAR",
+			"enable": 1,
+			"modules": ["${starModule}"],
+
+			"qsub": {
+				"name": "star_load_genome",
+				"mem": "6G"
+			},
+
+			"params": {
+				"--genomeDir": "${hg19_genome_dir}",
+				"--genomeLoad": "LoadAndExit"
+			}
+		},
+
 		{
 			"analysis": "star_mapper",
 			"description": "Splice-aware aligner",
@@ -27,6 +45,8 @@
 			"outdirs": [
 				{"d_star_mapper": "${outdir}/star_mapper"}
 			],
+	
+			"dependencies": ["star_load_genome"],
 
 			"qsub": {
 				"name": "star_mapper",
@@ -35,6 +55,7 @@
 			},
 		
 			"params": {
+				"--genomeLoad": "LoadAndKeep",
 				"--runNumThread": 15,
 				"--quantMode": "GeneCounts",
 				"--genomeDir": "${hg19_genome_dir}",
@@ -42,6 +63,26 @@
 				"--sjdbGTFfile": "${hg19_gtf_file}",
 				"--outdir": "${d_star_mapper}",
 				"--readFilesIn": "${read1} ${read2}"
+			}
+		},
+
+		{
+			"analysis": "star_unload_genome",
+			"description": "Removes the loaded genome from memory.",
+			"program": "STAR",
+			"enable": 1,
+			"modules": ["${starModule}"],
+			
+			"qsub": {
+				"name": "star_unload_genome",
+				"mem": "100M",
+			},
+
+			"dependencies": ["star_mapper"],
+		
+			"params": {
+				"--genomeDir": "${hg19_genome_dir}",
+				"--genomeLoad": "Remove"
 			}
 		}
 	]
