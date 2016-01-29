@@ -45,7 +45,7 @@ The qsub object of an analysis is used to specialize the global qsub object by m
 Qsub object properties:
 1) 'directory' sets the working direcory in which the analysis will be executed on the cluster. 
 
-There is limitid support JSON pointers see, as defined in rfc6901 (http://tools.ietf.org/html/rfc6901). Currently, only absolute JSON pointers to values within the same document are supported. Instead of using pointers, use the resource mechanism described above.
+There is limited support JSON pointers see, as defined in rfc6901 (http://tools.ietf.org/html/rfc6901). Currently, only absolute JSON pointers to values within the same document are supported. Instead of using pointers, use the resource mechanism described above.
 
 More documentation coming ...
 
