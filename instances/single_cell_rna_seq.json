@@ -16,6 +16,28 @@
 	
 	"analyses": [
 
+		{
+			"analysis": star_index_genome",
+			"description": "Creates a genomic index, used when mapping reads to the reference.",
+			"program": "STAR",
+			"enable": 1,
+			"modules": ["${starModule}"],
+			
+			"qsub": {
+				"mem": "2G",
+				"slots": 10
+			},
+
+			"params": {
+				"--runThreadN" 10,
+				"--runMode": "genomeGenerate",
+				"--genomeDir": "${hg19_genome_dir}",
+				"--sjdbGTFfile": "${hg19_gtf_file",
+				"--genomeFastaFiles": ${genomeFastaFiles}
+			}
+		},
+
+
 		{ 
 			"analysis": "star_load_genome",
 			"description": "Load the genome into memory for all subsequent mapping jobs to use.",
@@ -24,7 +46,6 @@
 			"modules": ["${starModule}"],
 
 			"qsub": {
-				"name": "star_load_genome",
 				"mem": "6G"
 			},
 
@@ -49,7 +70,6 @@
 			"dependencies": ["star_load_genome"],
 
 			"qsub": {
-				"name": "star_mapper",
 				"mem": "6G",
 				"slots": 15
 			},
@@ -59,10 +79,14 @@
 				"--runNumThread": 15,
 				"--quantMode": "GeneCounts",
 				"--genomeDir": "${hg19_genome_dir}",
+				"--sjdbOverhang": 90,
 				"--outFileNamePrefix": "${d_star_mapper}",
-				"--sjdbGTFfile": "${hg19_gtf_file}",
-				"--outdir": "${d_star_mapper}",
 				"--readFilesIn": "${read1} ${read2}"
+				"--outSAMmultNmax": 5,
+				"--outFilterMultimapNmax": 10,
+				"--outSAMstrandField": intronMotif",
+				"--outSAMattributes NH HI AS nM NM MD XS"
+		
 			}
 		},
 
@@ -70,11 +94,10 @@
 			"analysis": "star_unload_genome",
 			"description": "Removes the loaded genome from memory.",
 			"program": "STAR",
-			"enable": 1,
+			"enable": 0,
 			"modules": ["${starModule}"],
 			
 			"qsub": {
-				"name": "star_unload_genome",
 				"mem": "100M",
 			},
 
