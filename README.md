@@ -40,12 +40,12 @@ object.  An analysis is defined as an executable that can have command-line opti
 arguments. Dependencies on other analyses can be specified. Each analysis object may contain a
 "params" object, an "args" object, and a "qsub" object.  The params object
 lays out the analysis parameters/options, while the args object contains an array of all the non-option arguments of the analysis.
-The qsub object of an analysis is used to specialize the global qsub object by means of locally overwriting global qsub properties and adding additional ones.
+The qsub object of an analysis is used to specialize the global qsub object by means of locally overwriting global qsub properties and adding additional ones. When an analysis is executed by one of the supported grid engines, the name of the grid engine job will be the same as the analysis name, unless the "name" key of the "qsub" object is defined which takes precedence.
 
 Qsub object properties:
 1) 'directory' sets the working direcory in which the analysis will be executed on the cluster. 
 
-There is limitid support JSON pointers see, as defined in rfc6901 (http://tools.ietf.org/html/rfc6901). Currently, only absolute JSON pointers to values within the same document are supported. Instead of using pointers, use the resource mechanism described above.
+There is limited support JSON pointers see, as defined in rfc6901 (http://tools.ietf.org/html/rfc6901). Currently, only absolute JSON pointers to values within the same document are supported. Instead of using pointers, use the resource mechanism described above.
 
 More documentation coming ...
 
