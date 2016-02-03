@@ -77,16 +77,18 @@
 			"params": {
 				"--genomeLoad": "LoadAndKeep",
 				"--runNumThread": 15,
-				"--quantMode": "GeneCounts",
+				"--quantMode": "GeneCounts TranscriptomeSAM",
 				"--genomeDir": "${hg19_genome_dir}",
 				"--sjdbOverhang": 90,
 				"--outFileNamePrefix": "${d_star_mapper}",
-				"--readFilesIn": "${read1} ${read2}"
+				"--readFilesIn": "${read1} ${read2}",
+				"--readFilesCommand": "gunzip -c",
+				"--outReadsUnmapped": "Fastx",
 				"--outSAMmultNmax": 5,
 				"--outFilterMultimapNmax": 10,
 				"--outSAMstrandField": intronMotif",
-				"--outSAMattributes NH HI AS nM NM MD XS"
-		
+				"--outSAMattributes": NH HI AS nM NM MD XS",
+				"--outSAMtype": "BAM"
 			}
 		},
 
