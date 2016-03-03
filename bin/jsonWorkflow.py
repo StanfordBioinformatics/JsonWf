@@ -104,7 +104,8 @@ elif enableList:
 run = args.run
 sjmfile = os.path.basename(sjmfile)
 sjmfile = os.path.join(outdir,sjmfile)
-#if os.path.exists(sjmfile):
+if os.path.exists(sjmfile):
+	print("WARNING: The SJM file {sjmfile} already exists. New jobs will be appended to it.".format(sjmfile=sjmfile))
 #	os.remove(sjmfile)
 
 
