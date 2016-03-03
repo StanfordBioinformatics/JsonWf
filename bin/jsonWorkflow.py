@@ -104,8 +104,8 @@ elif enableList:
 run = args.run
 sjmfile = os.path.basename(sjmfile)
 sjmfile = os.path.join(outdir,sjmfile)
-if os.path.exists(sjmfile):
-	os.remove(sjmfile)
+#if os.path.exists(sjmfile):
+#	os.remove(sjmfile)
 
 
 wf.processAnalyses()
