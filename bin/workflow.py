@@ -25,7 +25,7 @@ import jsonschema
 import subprocess
 import re
 import copy
-
+import time as ttime
 
 
 
@@ -45,11 +45,14 @@ class Workflow:
 	numReg = re.compile(r'\d$')
 	coreQsubArgs = ["time","mem","slots","pe","host","queue", "project","outdir","-e","-o","directory","name"]
 
-	def __init__(self,conf,outdir,resources={}):
+	def __init__(self,conf,outdir,jobNameMangling=False,resources={}):
 		"""
 		Args : conf - the JSON configuration file
            resources - dict of additional resources
+					 jobNameMangling - bool. True means to append the date to the end of the job name. Only usefule for when a single SJM file would otherwise have multiple jobs of the same name. 
+						Note that this will mess up any dependnecies, since the names of the jobs they depend on will have changed. Thus, only set to True if there aren't any dependencies in the SJM file.
 		"""
+		self.jobNameMangling = jobNameMangling
 		self.conf,self.schema = self.validate(conf=conf)
 		if not os.path.exists(outdir):
 		  os.mkdir(outdir)
@@ -502,6 +505,8 @@ class Workflow:
 			jobname = qsub['name']
 		except KeyError:
 			jobname = analysisName
+		if self.jobNameMangling:
+			jobname += "_" + str(ttime.time())
 		job = sjm_writer.Job(jobname)
 		job.setSjmFile(sjmfile)
 		job.setCmd(cmd)
