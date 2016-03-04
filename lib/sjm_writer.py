@@ -36,7 +36,7 @@ class Job:
 		self.setName(name)
 #		self.queue = False
 		self.outfile = False
-		self.logfile = False
+		#self.logfile = False
 		self.host = False
 		self.wdir = False
 		self.modules = False
@@ -81,8 +81,8 @@ class Job:
 	def setHost(self,host):
 		self.host = host
 
-	def setLogfile(self,logfile):
-		self.logfile = logfile
+	#def setLogfile(self,logfile):
+	#	self.logfile = logfile
 
 	def setSjmFile(self,sjmfile):
 		self.sjmfile = sjmfile
@@ -147,8 +147,8 @@ class Job:
 	def getHost(self):
 		return self.host
 
-	def getLogfile(self):
-		return self.logfile
+	#def getLogfile(self):
+	#	return self.logfile
 
 	def getSjmFile(self):
 		return self.sjmfile
@@ -195,9 +195,9 @@ class Job:
 		Opens the SJM file in append mode.
 		"""
 		fout = open(self.getSjmFile(), 'a')
-		logfile = self.getLogfile()
-		if logfile:
-			fout.write("log_dir " + logfile + "\n")
+		#logfile = self.getLogfile()
+		#if logfile:
+		#	fout.write("log_dir " + logfile + "\n")
 		fout.write("job_begin\n")
 		fout.write(self.tab + "name " + self.getName() + "\n")
 		fout.write(self.tab + "cmd " + self.getCmd() + "\n")
