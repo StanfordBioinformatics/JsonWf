@@ -34,6 +34,7 @@ parser.add_argument('-s','--sjmfile',help="(Required when none of --analyses, --
 parser.add_argument('-v','--verbose',help="Print extra details to stdout.")
 parser.add_argument('--run',action="store_true",help="Don't just generate the sjm file, run it too. By default, the program does not wait for the sjm job to complete; see --wait.")
 parser.add_argument('--wait',action="store_true",help="When --run is specified, indicates that the script should wait for the sjm job to complete before exiting.")
+parser.add_argument('--mail-to',help="Comma-delimited string of email addresses to notify when SJM finished running an SJM file.")
 parser.add_argument('--jobNameMangling',action="store_true",help="True means to append the date to the end of the job name. Only usefule for when a single SJM file would otherwise have multiple jobs of the same name. Note that this will mess up any dependnecies, since the names of the jobs they depend on will have changed. Thus, only set to True if there aren't any dependencies in the SJM file.")
 showAnalysesGroup = parser.add_mutually_exclusive_group()
 showAnalysesGroup.add_argument('--analyses',action="store_true",help="Display a list of availble analyses present in --conf-file.")
@@ -46,6 +47,7 @@ group.add_argument('--disable-all-except',help="Comma-delimited list of case-sen
 
 args = parser.parse_args()
 
+mailTo = args.mail_to
 jobNameMangling = args.jobNameMangling
 if args.wait and not args.run:
 	parser.error("Argument --wait cannot be specified w/o --run")
@@ -115,6 +117,6 @@ wf.buildSjmFile(sjmfile=sjmfile)
 
 if run:
 	if args.wait:
-		subprocess.call("sjm -i {sjmfile}".format(sjmfile=sjmfile),shell=True)
+		subprocess.call("sjm -i --mail {mailTo} {sjmfile}".format(mailTo=mailTo,sjmfile=sjmfile),shell=True)
 	else:
-		subprocess.Popen("sjm {sjmfile}".format(sjmfile=sjmfile),shell=True)
+		subprocess.Popen("sjm --mail {mailTo} {sjmfile}".format(mailTo=mailTo,sjmfile=sjmfile),shell=True)

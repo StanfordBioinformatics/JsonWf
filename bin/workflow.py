@@ -126,6 +126,14 @@ class Workflow:
 	
 			elif type(val) == dict:
 				self.rmComments(val)
+			elif (type(val) == list) and (len(val) >= 1):
+				if type(val[0]) == dict:
+					for j in val:
+						self.rmComments(j)
+				else:
+					for l in val:
+						if l.startswith("#"):
+							val.remove(l)
 
 
 	def getDependencies(self):
