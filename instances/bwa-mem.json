@@ -110,7 +110,7 @@
 			"qsub": {
 				"name": "cleanBam",
 				"slots": 1,
-				"mem": "12G"
+				"mem": "14G"
 			},
 
 			"params": {
@@ -138,7 +138,7 @@
 			"qsub": {
 				"name": "MarkDuplicates",
 				"slots": 1,
-				"mem": "12G"
+				"mem": "14G"
 			},
 
 			"params": {
@@ -163,7 +163,7 @@
 			"qsub": {
 				"name": "CollectAlignmentSummaryMetrics",
 				"slots": 1,
-				"mem": "12G"
+				"mem": "14G"
 			},
 
 			"params": {
@@ -191,7 +191,7 @@
       "qsub": {
         "name": "BuildBamIndex",
         "slots": 1,
-        "mem": "10G",
+        "mem": "12G",
 				"-m": "ea"
       },  
   
