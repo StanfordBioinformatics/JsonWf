@@ -1,18 +1,18 @@
 { 
 	"version": "2.0.0",
 	"resources": {
-		"reference": "/srv/gs1/projects/scg/Genomes/H_sapiens/hg19_female/BWA_0.7.10/hg19_female.fa",
-		"bwaModule": "bwa/0.7.10",
-		"PICARD": "/srv/gs1/software/picard-tools/1.111",
-		"samtoolsModule": "samtools/0.1.19",
-		"javaModule": "java/latest",
+		"reference": "/srv/gsfs0/shared_data/RefGenomes/H_sapiens/hg19_female/BWA_0.7.12/hg19_female.fa",
+		"bwaModule": "bwa/0.7.12",
+		"PICARD": "/srv/gsfs0/software/picard-tools/2.0.1",
+		"samtoolsModule": "samtools/1.3",
+		"javaModule": "java/latest"
+	},
 
-		"qsub": {
-				"-M": "nathankw@stanford.edu",
-				"-m": "a",
-				"-A": "seq_center",
-				"-R": "y"
-		}
+	"globalQsub": {
+		"-M": "nathankw@stanford.edu",
+		"-m": "e",
+		"-A": "seq_center",
+		"-R": "y"
 	},
 	
 	"analyses": [
@@ -28,7 +28,7 @@
 			],
 
 			"qsub": {
-				"mem": "4G",
+				"mem": "8G",
 				"slots": 6
 			},
 		
@@ -54,7 +54,7 @@
     
       "qsub": {
         "slots": 1,
-        "mem": "4G"
+        "mem": "10G"
       },  
     
       "params": {
@@ -65,44 +65,18 @@
 		},
 
 		{
-			"analysis": "cleanBam",
-			"enable": 1,
-			"modules": ["${javaModule}"],
-			"jar": "${PICARD}/CleanSam.jar",
-			"javavm": "-Xmx6G",
-			"inputFormat": "bam",
-
-			"outfiles": [
-				{"cleanBam_out": "${sam2Bam_out%.*}.clean.bam"}
-			],
-
-			"dependencies": ["sam2Bam"],
-
-			"qsub": {
-				"name": "cleanBam",
-				"slots": 1,
-				"mem": "10G"
-			},
-
-			"params": {
-				"INPUT=": "$sam2Bam_out",
-				"OUTPUT=": "$cleanBam_out"
-			}
-		},
-		
-		{
     	"analysis": "sortBam",
       "enable": 1,
       "modules": ["$javaModule"],
-      "jar": "${PICARD}/SortSam.jar",
+      "jar": "${PICARD}/picard.jar SortSam",
       "javavm": "-Xmx4G",
       "inputFormat": "bam",
 
 			"outfiles": [
-				{"sortBam_out": "${cleanBam_out%.*}.coordSorted.bam"}
+				{"sortBam_out": "${sam2Bam_out%.*}.coordSorted.bam"}
 			],
 
-			"dependencies": ["cleanBam"],
+			"dependencies": ["sam2bam"],
   
       "qsub": {
         "name": "sortBam",
@@ -111,35 +85,118 @@
       },  
   
       "params": {
-        "INPUT=": "$cleanBam_out",
+        "INPUT=": "$sam2Bam_out",
 				"OUTPUT=": "$sortBam_out",
 				"SORT_ORDER=": "coordinate"
       }
 		},
 
 		{
+			"analysis": "cleanBam",
+			"description": "Cleans the provided SAM/BAM, soft-clipping beyond-end-of-reference alignments and setting MAPQ to 0 for unmapped reads.",
+			"enable": 1,
+			"modules": ["${javaModule}"],
+			"jar": "${PICARD}/picard.jar CleanSam",
+			"javavm": "-Xmx8G",
+			"inputFormat": "bam",
+
+			"outfiles": [
+				{"cleanBam_out": "${sam2Bam_out%.*}.clean.bam"}
+			],
+
+			"dependencies": ["sortBam"],
+
+			"qsub": {
+				"name": "cleanBam",
+				"slots": 1,
+				"mem": "12G"
+			},
+
+			"params": {
+				"INPUT=": "$sortBam_out",
+				"OUTPUT=": "$cleanBam_out"
+			}
+		},
+
+
+		{
+			"analysis": "MarkDuplicates",
+			"description": "Removes optical and PCR duplicates.",
+			"enable": 1,
+			"modules": ["${javaModule}"],
+			"jar": "${PICARD}/picard.jar MarkDuplicates",
+			"javavm": "-Xmx8G",
+			"inputFormat": "bam",
+
+			"outfiles": [
+				{"dedupBam_out": "${cleanBam_out%.*}.dedup.bam"}
+			],
+
+			"dependencies": ["cleanBam"],
+
+			"qsub": {
+				"name": "MarkDuplicates",
+				"slots": 1,
+				"mem": "12G"
+			},
+
+			"params": {
+				"INPUT=": "$cleanBam_out",
+				"OUTPUT=": "$dedupBam_out",
+				"REMOVE_DUPLICATES=": "true",
+				"METRICS_FILE": "dedupMetrics_${dedupBam_out%.*}.txt"
+			}
+		},
+
+
+		{
+			"analysis": "CollectAlignmentSummaryMetrics",
+			"enable": 1,
+			"modules": ["${javaModule}"],
+			"jar": "${PICARD}/picard.jar CollectAlignmentSummaryMetrics",
+			"javavm": "-Xmx8G",
+			"inputFormat": "bam",
+
+			"dependencies": ["MarkDuplicates"],
+
+			"qsub": {
+				"name": "CollectAlignmentSummaryMetrics",
+				"slots": 1,
+				"mem": "12G"
+			},
+
+			"params": {
+				"INPUT=": "$dedupBam_out",
+				"OUTPUT=": "alnSumMetrics_${dedupBam_out%.*}.txt",
+				"REFERENCE": "$reference"
+			}
+		},
+
+		
+		{
     	"analysis": "BuildBamIndex",
       "enable": 1,
       "modules": ["$javaModule"],
-      "jar": "${PICARD}/BuildBamIndex.jar",
+      "jar": "${PICARD}/picard.jar BuildBamIndex",
       "javavm": "-Xmx6G",
       "inputFormat": "bam",
 
 			"outfiles": [
-				{"BuildBamIndex_out": "${sortBam_out%.*}.bai"}
+				{"buildBamIndex_out": "${dedupBam_out%.*}.bai"}
 			],
 
-			"dependencies": ["sortBam"],
+			"dependencies": ["CollectAlignmentSummaryMetrics"],
   
       "qsub": {
         "name": "BuildBamIndex",
         "slots": 1,
-        "mem": "10G"
+        "mem": "10G",
+				"-m": "ea"
       },  
   
       "params": {
-        "INPUT=": "$sortBam_out",
-				"OUTPUT=": "$BuildBamIndex_out"
+        "INPUT=": "$dedupBam_out",
+				"OUTPUT=": "$buildBamIndex_out"
       }  
 		}
 	]
