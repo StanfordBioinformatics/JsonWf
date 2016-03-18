@@ -145,7 +145,7 @@
 				"INPUT=": "$cleanBam_out",
 				"OUTPUT=": "$dedupBam_out",
 				"REMOVE_DUPLICATES=": "true",
-				"METRICS_FILE": "dedupMetrics_${dedupBam_out%.*}.txt"
+				"METRICS_FILE=": "dedupMetrics_${dedupBam_out%.*}.txt"
 			}
 		},
 
@@ -169,7 +169,7 @@
 			"params": {
 				"INPUT=": "$dedupBam_out",
 				"OUTPUT=": "alnSumMetrics_${dedupBam_out%.*}.txt",
-				"REFERENCE": "$reference"
+				"REFERENCE=": "$reference"
 			}
 		},
 
