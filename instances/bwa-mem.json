@@ -76,7 +76,7 @@
 				{"sortBam_out": "${sam2Bam_out%.*}.coordSorted.bam"}
 			],
 
-			"dependencies": ["sam2bam"],
+			"dependencies": ["sam2Bam"],
   
       "qsub": {
         "name": "sortBam",
