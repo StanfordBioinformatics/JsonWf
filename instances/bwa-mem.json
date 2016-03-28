@@ -25,11 +25,11 @@
 			"inputFormat": "fastq",
 
 			"outfiles": [
-				{"bwa_mem_out": "$samfile"}
+				{"bwa_mem_out": "${samFile}"}
 			],
 
 			"qsub": {
-				"mem": "8G",
+				"mem": "5G",
 				"slots": 6
 			},
 		
@@ -37,7 +37,7 @@
 				"-t": 6
 			},
 		
-			"args": ["$reference","$r1","$r2",">","$bwa_mem_out"]
+			"args": ["$reference","$read1","$read2",">","$bwa_mem_out"]
 		},
 
 		{
@@ -48,7 +48,7 @@
       "inputFormat": "sam",
 
 			"outfiles": [
-				{"sam2Bam_out": "${samfile%.*}.bam"}
+				{"sam2Bam_out": "${samFile%.*}.bam"}
 			],
 
 			"dependencies": ["bwa_mem"],
@@ -62,7 +62,7 @@
 				"-Shb": ""
 			},
 
-			"args": ["$samfile",">","$sam2Bam_out"]
+			"args": ["${bwa_mem_out}",">","$sam2Bam_out"]
 		},
 
 		{
@@ -102,7 +102,7 @@
 			"inputFormat": "bam",
 
 			"outfiles": [
-				{"cleanBam_out": "${sam2Bam_out%.*}.clean.bam"}
+				{"cleanBam_out": "${sortBam_out%.*}.clean.bam"}
 			],
 
 			"dependencies": ["sortBam"],
@@ -169,7 +169,7 @@
 			"params": {
 				"INPUT=": "$dedupBam_out",
 				"OUTPUT=": "${dedupBam_out%.*}_alnMetrics.txt",
-				"REFERENCE=": "$reference"
+				"REFERENCE_SEQUENCE=": "$reference"
 			}
 		},
 
