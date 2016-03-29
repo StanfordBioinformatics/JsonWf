@@ -11,7 +11,7 @@
 
 	"globalQsub": {
 		"-M": "nathankw@stanford.edu",
-		"-m": "e",
+		"-m": "a",
 		"-A": "seq_center",
 		"-R": "y",
 		"-l h_rt=": "12:00:00"
