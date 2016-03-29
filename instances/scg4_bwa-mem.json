@@ -30,7 +30,7 @@
 			],
 
 			"qsub": {
-				"mem": "10G",
+				"mem": "3G",
 				"slots": 10 
 			},
 		
@@ -56,7 +56,7 @@
     
       "qsub": {
         "slots": 1,
-        "mem": "10G"
+        "mem": "4G"
       },  
     
       "params": {
@@ -83,7 +83,7 @@
       "qsub": {
         "name": "sortBam",
         "slots": 1,
-        "mem": "16G"
+        "mem": "11G"
       },  
   
       "params": {
@@ -99,7 +99,7 @@
 			"enable": 1,
 			"modules": ["${javaModule}","$picardToolsModule"],
 			"jar": "${PICARD}/picard.jar CleanSam",
-			"javavm": "-Xmx10G",
+			"javavm": "-Xmx6G",
 			"inputFormat": "bam",
 
 			"outfiles": [
@@ -111,7 +111,7 @@
 			"qsub": {
 				"name": "cleanBam",
 				"slots": 1,
-				"mem": "16G"
+				"mem": "8G"
 			},
 
 			"params": {
@@ -127,7 +127,7 @@
 			"enable": 1,
 			"modules": ["${javaModule}","$picardToolsModule"],
 			"jar": "${PICARD}/picard.jar MarkDuplicates",
-			"javavm": "-Xmx10G",
+			"javavm": "-Xmx10",
 			"inputFormat": "bam",
 
 			"outfiles": [
@@ -139,7 +139,7 @@
 			"qsub": {
 				"name": "MarkDuplicates",
 				"slots": 1,
-				"mem": "16G"
+				"mem": "13G"
 			},
 
 			"params": {
@@ -156,7 +156,7 @@
 			"enable": 1,
 			"modules": ["${javaModule}","$picardToolsModule"],
 			"jar": "${PICARD}/picard.jar CollectAlignmentSummaryMetrics",
-			"javavm": "-Xmx10G",
+			"javavm": "-Xmx6G",
 			"inputFormat": "bam",
 
 			"dependencies": ["MarkDuplicates"],
@@ -164,7 +164,7 @@
 			"qsub": {
 				"name": "CollectAlignmentSummaryMetrics",
 				"slots": 1,
-				"mem": "16G"
+				"mem": "8G"
 			},
 
 			"params": {
@@ -192,7 +192,7 @@
       "qsub": {
         "name": "BuildBamIndex",
         "slots": 1,
-        "mem": "12G",
+        "mem": "8G",
 				"-m": "ea"
       },  
   
