@@ -192,7 +192,7 @@
       "qsub": {
         "name": "BuildBamIndex",
         "slots": 1,
-        "mem": "10G",
+        "mem": "10G"
       },  
   
       "params": {
