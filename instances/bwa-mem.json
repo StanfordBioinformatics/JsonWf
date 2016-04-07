@@ -11,10 +11,10 @@
 
 	"globalQsub": {
 		"-M": "nathankw@stanford.edu",
-		"-m": "e",
+		"-m": "a",
 		"-A": "seq_center",
-		"-R": "y",	
-		"-l h_rt=": "12:00:00"
+		"-R": "y",
+		"-l h_rt=12:00:00": ""
 	},
 	
 	"analyses": [
@@ -30,12 +30,12 @@
 			],
 
 			"qsub": {
-				"mem": "5G",
-				"slots": 6
+				"mem": "3G",
+				"slots": 10 
 			},
 		
 			"params": {
-				"-t": 6
+				"-t": 10 
 			},
 		
 			"args": ["$reference","$read1","$read2",">","$bwa_mem_out"]
@@ -56,7 +56,7 @@
     
       "qsub": {
         "slots": 1,
-        "mem": "10G"
+        "mem": "8G"
       },  
     
       "params": {
@@ -71,7 +71,7 @@
       "enable": 1,
       "modules": ["$javaModule","$picardToolsModule"],
       "jar": "${PICARD}/picard.jar SortSam",
-      "javavm": "-Xmx4G",
+      "javavm": "-Xmx6G -XX:ParallelGCThreads=5",
       "inputFormat": "bam",
 
 			"outfiles": [
@@ -83,7 +83,7 @@
       "qsub": {
         "name": "sortBam",
         "slots": 1,
-        "mem": "16G"
+        "mem": "10G"
       },  
   
       "params": {
@@ -99,7 +99,7 @@
 			"enable": 1,
 			"modules": ["${javaModule}","$picardToolsModule"],
 			"jar": "${PICARD}/picard.jar CleanSam",
-			"javavm": "-Xmx8G",
+			"javavm": "-Xmx6G -XX:ParallelGCThreads=5",
 			"inputFormat": "bam",
 
 			"outfiles": [
@@ -111,7 +111,7 @@
 			"qsub": {
 				"name": "cleanBam",
 				"slots": 1,
-				"mem": "14G"
+				"mem": "10G"
 			},
 
 			"params": {
@@ -127,7 +127,7 @@
 			"enable": 1,
 			"modules": ["${javaModule}","$picardToolsModule"],
 			"jar": "${PICARD}/picard.jar MarkDuplicates",
-			"javavm": "-Xmx8G",
+			"javavm": "-Xmx6G -XX:ParallelGCThreads=5",
 			"inputFormat": "bam",
 
 			"outfiles": [
@@ -139,7 +139,7 @@
 			"qsub": {
 				"name": "MarkDuplicates",
 				"slots": 1,
-				"mem": "14G"
+				"mem": "10G"
 			},
 
 			"params": {
@@ -156,7 +156,7 @@
 			"enable": 1,
 			"modules": ["${javaModule}","$picardToolsModule"],
 			"jar": "${PICARD}/picard.jar CollectAlignmentSummaryMetrics",
-			"javavm": "-Xmx8G",
+			"javavm": "-Xmx2G -XX:ParallelGCThreads=5",
 			"inputFormat": "bam",
 
 			"dependencies": ["MarkDuplicates"],
@@ -164,7 +164,7 @@
 			"qsub": {
 				"name": "CollectAlignmentSummaryMetrics",
 				"slots": 1,
-				"mem": "14G"
+				"mem": "6G"
 			},
 
 			"params": {
@@ -180,7 +180,7 @@
       "enable": 1,
       "modules": ["$javaModule","$picardToolsModule"],
       "jar": "${PICARD}/picard.jar BuildBamIndex",
-      "javavm": "-Xmx6G",
+      "javavm": "-Xmx6G -XX:ParallelGCThreads=5",
       "inputFormat": "bam",
 
 			"outfiles": [
@@ -192,7 +192,7 @@
       "qsub": {
         "name": "BuildBamIndex",
         "slots": 1,
-        "mem": "12G",
+        "mem": "10G",
 				"-m": "ea"
       },  
   
