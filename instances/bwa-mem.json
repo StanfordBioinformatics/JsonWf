@@ -193,7 +193,6 @@
         "name": "BuildBamIndex",
         "slots": 1,
         "mem": "10G",
-				"-m": "ea"
       },  
   
       "params": {
