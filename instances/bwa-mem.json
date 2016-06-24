@@ -56,7 +56,7 @@
     
       "qsub": {
         "slots": 1,
-        "mem": "8G"
+        "mem": "12G"
       },  
     
       "params": {
@@ -71,7 +71,7 @@
       "enable": 1,
       "modules": ["$javaModule","$picardToolsModule"],
       "jar": "${PICARD}/picard.jar SortSam",
-      "javavm": "-Xmx6G -XX:ParallelGCThreads=5",
+      "javavm": "-Xmx11G -XX:ParallelGCThreads=5",
       "inputFormat": "bam",
 
 			"outfiles": [
@@ -83,7 +83,7 @@
       "qsub": {
         "name": "sortBam",
         "slots": 1,
-        "mem": "10G"
+        "mem": "18G"
       },  
   
       "params": {
@@ -100,7 +100,7 @@
 			"enable": 1,
 			"modules": ["${javaModule}","$picardToolsModule"],
 			"jar": "${PICARD}/picard.jar CleanSam",
-			"javavm": "-Xmx6G -XX:ParallelGCThreads=5",
+			"javavm": "-Xmx11G -XX:ParallelGCThreads=5",
 			"inputFormat": "bam",
 
 			"outfiles": [
@@ -112,7 +112,7 @@
 			"qsub": {
 				"name": "cleanBam",
 				"slots": 1,
-				"mem": "10G"
+				"mem": "18G"
 			},
 
 			"params": {
@@ -141,7 +141,7 @@
 			"qsub": {
 				"name": "MarkDuplicates",
 				"slots": 1,
-				"mem": "10G"
+				"mem": "18G"
 			},
 
 			"params": {
@@ -159,7 +159,7 @@
 			"enable": 1,
 			"modules": ["${javaModule}","$picardToolsModule"],
 			"jar": "${PICARD}/picard.jar CollectAlignmentSummaryMetrics",
-			"javavm": "-Xmx2G -XX:ParallelGCThreads=5",
+			"javavm": "-Xmx11G -XX:ParallelGCThreads=5",
 			"inputFormat": "bam",
 
 			"dependencies": ["MarkDuplicates"],
@@ -167,7 +167,7 @@
 			"qsub": {
 				"name": "CollectAlignmentSummaryMetrics",
 				"slots": 1,
-				"mem": "6G"
+				"mem": "10G"
 			},
 
 			"params": {
@@ -184,7 +184,7 @@
       "enable": 1,
       "modules": ["$javaModule","$picardToolsModule"],
       "jar": "${PICARD}/picard.jar BuildBamIndex",
-      "javavm": "-Xmx6G -XX:ParallelGCThreads=5",
+      "javavm": "-Xmx11G -XX:ParallelGCThreads=5",
       "inputFormat": "bam",
 
 			"outfiles": [
@@ -196,7 +196,7 @@
       "qsub": {
         "name": "BuildBamIndex",
         "slots": 1,
-        "mem": "10G"
+        "mem": "18G"
       },  
   
       "params": {
