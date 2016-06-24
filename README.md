@@ -1,3 +1,5 @@
+©2014 The Board of Trustees of the Leland Stanford Junior University
+
 JsonWf
 ======
 Created:  March 31, 2014
