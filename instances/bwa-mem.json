@@ -89,7 +89,8 @@
       "params": {
         "INPUT=": "$sam2Bam_out",
 				"OUTPUT=": "$sortBam_out",
-				"SORT_ORDER=": "coordinate"
+				"SORT_ORDER=": "coordinate",
+				"VALIDATION_STRINGENCY=": "LENIENT"
       }
 		},
 
@@ -116,7 +117,8 @@
 
 			"params": {
 				"INPUT=": "$sortBam_out",
-				"OUTPUT=": "$cleanBam_out"
+				"OUTPUT=": "$cleanBam_out",
+				"VALIDATION_STRINGENCY=": "LENIENT"
 			}
 		},
 
@@ -146,7 +148,8 @@
 				"INPUT=": "$cleanBam_out",
 				"OUTPUT=": "$dedupBam_out",
 				"REMOVE_DUPLICATES=": "true",
-				"METRICS_FILE=": "${dedupBam_out%.*}_dedupMetrics.txt"
+				"METRICS_FILE=": "${dedupBam_out%.*}_dedupMetrics.txt",
+				"VALIDATION_STRINGENCY=": "LENIENT"
 			}
 		},
 
@@ -170,7 +173,8 @@
 			"params": {
 				"INPUT=": "$dedupBam_out",
 				"OUTPUT=": "${dedupBam_out%.*}_alnMetrics.txt",
-				"REFERENCE_SEQUENCE=": "$reference"
+				"REFERENCE_SEQUENCE=": "$reference",
+				"VALIDATION_STRINGENCY=": "LENIENT"
 			}
 		},
 
@@ -197,7 +201,8 @@
   
       "params": {
         "INPUT=": "$dedupBam_out",
-				"OUTPUT=": "$buildBamIndex_out"
+				"OUTPUT=": "$buildBamIndex_out",
+				"VALIDATION_STRINGENCY=": "LENIENT"
       }  
 		}
 	]
