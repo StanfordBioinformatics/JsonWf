@@ -167,7 +167,7 @@
 			"qsub": {
 				"name": "CollectAlignmentSummaryMetrics",
 				"slots": 1,
-				"mem": "10G"
+				"mem": "17G"
 			},
 
 			"params": {
