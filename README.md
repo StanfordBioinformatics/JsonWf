@@ -2,9 +2,9 @@
 
 JsonWf
 ======
-Created:  March 31, 2014
-Nathaniel Watson
-Stanford University Department of Genetics
+Created:  March 31, 2014  
+Nathaniel Watson  
+Stanford University Department of Genetics  
 SCGPM http://scgpm.stanford.edu  
 nathankw@stanford.edu
 
