@@ -10,7 +10,7 @@ nathankw@stanford.edu
 
 NOTE - This documentation is under active development.
 
-## Abstract:
+#### Abstract:
 JsonWf is a JSON format specification for defining workflow configuration; it is also the software supports executing pipelines written according to this specification.  A worfklow is defined as a set of related tasks, or jobs, that are to be executed for some given input data. Separating the configuration from the workflow code itself allows for ease in workflow management and customization.  In JsonWf, the workflow configuration is written in JSON in a format that abides by a built-in schema, which allows for powerful error checking.  Parameters, input and output file names, and job depencendies can easily be defined without any redundancy through the use of variables.  A workflow's complete set of configuration, which shall be referred to as a (workflow) definition, may be programatically parsed via the API for use in downstream software. In addition, JsonWf includes a built-in tool to write the definition into a SJM pipeline.
   
 
@@ -52,10 +52,10 @@ There is limited support JSON pointers see, as defined in rfc6901 (http://tools.
 
 More documentation coming ...
 
-## References:
+#### References:
 [1] Google Slides document for Kwality https://docs.google.com/a/stanford.edu/presentation/d/1sOQ2dJhI9bFvlU7GDiyrNfRP2r9Op06xc4qp2JTni5U/edit?usp=drive_web
 
-## ABBREVIATIONS:
+#### ABBREVIATIONS:
 
 SGE - Sun Grid Engine  
 OGE - Open Grid Engine
