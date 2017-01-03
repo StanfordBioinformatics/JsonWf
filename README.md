@@ -19,12 +19,12 @@ The main script that reads a file in JsonWf format is called jsonWorkflow.py.  G
 	2) validate the configuration against the built-in schema.  This will catch many types of potential errors in the configuration, including typos, undefined variables, and circular job dependencies,
 	3) create a directed acyclic graph (DAG) to deconvolute job dependencies,
 	4) write the validated and parsed configuration to a file in a format known as SJM format, which is understood by the SJM (Simple Job Manager) tool. The file in SJM format should be thought of as the worklfow itself (and not the workflow definition as previously discussed), and 
-	5) call SJM to execute SJM file (workflow) locally or on either the OGE or LSF compute cluster.  More about SJM further below.
+	5) call SJM to execute the SJM file (workflow) locally or on either the OGE or LSF compute cluster.  More about SJM further below.
 
 
 A prototype workflow definition for demonstrating the capabilities of JsonWf is Kwality, which is the first definition written in JsonWf. There is a useful Google Slides document [1] that demonstrates the usage of JsonWf and introduces you to the Kwality workflow.  In fact, JsonWf and Kwality co-evolved together, and in the beginning were part of the same piece of software.  Kwality contains a set of commands for obtaining statistics and other QC measaures for DNA sequence data analysis, and is shipped with JsonWf especially for demonstration purposes.  Another prototype definition is called bwa-aln-se.json, which also ships with this software; and this prototype demonstrates the use of dependencies whereas Kwality does not at present.
 
-SJM is currently not included with the JsonWf distribution, but is a accessible form github at https://github.com/StanfordBioinformatics/SJM/blob/master/doc/MANUAL.txt . SJM is a tool for managing a set of jobs that are run on OGE or LSF compute cluster, or locally on ones personal computer. 
+SJM is currently not included with the JsonWf distribution, but is a accessible from github at https://github.com/StanfordBioinformatics/SJM/blob/master/doc/MANUAL.txt . SJM is a tool for managing a set of jobs that are run on OGE or LSF compute cluster, or locally on ones personal computer. 
 
 Required arguments of jsonWorkflow.py are the workflow definition file (-c argument) and the output directory argument (--outdir argument). Job standard output (stdout) and standard error (stderr) streams will be written to files within the JobStatus directory. This directory is a sub-directory of the output directory given to kwality.py, and is automatically created.
 
