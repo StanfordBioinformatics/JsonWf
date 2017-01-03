@@ -26,7 +26,7 @@ A prototype workflow definition for demonstrating the capabilities of JsonWf is 
 
 SJM is currently not included with the JsonWf distribution, but is a accessible from github at https://github.com/StanfordBioinformatics/SJM/blob/master/doc/MANUAL.txt . SJM is a tool for managing a set of jobs that are run on OGE or LSF compute cluster, or locally on one's personal computer. 
 
-Required arguments of jsonWorkflow.py are the workflow definition file (-c argument) and the output directory argument (--outdir argument). Job standard output (stdout) and standard error (stderr) streams will be written to files within the JobStatus directory. This directory is a sub-directory of the output directory given to kwality.py, and is automatically created.
+Required arguments of jsonWorkflow.py are the workflow definition file (-c) and the output directory (--outdir). Job standard output (stdout) and standard error (stderr) streams will be written to files within the JobStatus directory. This directory is a sub-directory of the output directory given to jsonWorkflow.py, and is automatically created.
 
 JSON SCHEMA:
 The packaged schema schema.json defines the rules and structure of the 
