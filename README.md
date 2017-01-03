@@ -55,6 +55,6 @@ References:
 [1] Google Slides document for Kwality https://docs.google.com/a/stanford.edu/presentation/d/1sOQ2dJhI9bFvlU7GDiyrNfRP2r9Op06xc4qp2JTni5U/edit?usp=drive_web
 
 ABBREVIATIONS:
-SGE - Sun Grid Engine
 
+SGE - Sun Grid Engine
 OGE - Open Grid Engine
