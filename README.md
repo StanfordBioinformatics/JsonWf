@@ -5,7 +5,7 @@ JsonWf
 Created:  March 31, 2014
 Nathaniel Watson
 Stanford University Department of Genetics
-SCGPM http://scgpm.stanford.edu
+SCGPM http://scgpm.stanford.edu  
 nathankw@stanford.edu
 
 NOTE - This documentation is under active development.
@@ -56,5 +56,5 @@ References:
 
 ABBREVIATIONS:
 
-SGE - Sun Grid Engine
+SGE - Sun Grid Engine  
 OGE - Open Grid Engine
