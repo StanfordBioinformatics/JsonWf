@@ -53,7 +53,8 @@ There is limited support JSON pointers see, as defined in rfc6901 (http://tools.
 More documentation coming ...
 
 #### References:
-[1] Google Slides document for Kwality https://docs.google.com/a/stanford.edu/presentation/d/1sOQ2dJhI9bFvlU7GDiyrNfRP2r9Op06xc4qp2JTni5U/edit?usp=drive_web
+[1] Google Slides document for Kwality 
+https://docs.google.com/presentation/d/1sOQ2dJhI9bFvlU7GDiyrNfRP2r9Op06xc4qp2JTni5U/edit?usp=sharing
 
 #### Abbreviations:
 
